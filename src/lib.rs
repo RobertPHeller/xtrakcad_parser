@@ -1,14 +1,5 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use lalrpop_util::lalrpop_mod;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// Pull in the parser module
+lalrpop_mod!(pub xtrakcad); // synthesized by LALRPOP
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
