@@ -1,0 +1,13 @@
+[package]
+name = "xtrakcad_parser"
+version = "0.1.0"
+edition = "2024"
+authors = ["Robert Heller <heller@deepsoft.com>"]
+license = "GPL-2.0-only"
+readme = "README.md"
+keywords = ["model-railway", "railroad", "model-railroad", "parser", "cad"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+lalrpop-util = { version = "0.21.0", features = ["lexer", "unicode"] }
+
