@@ -1,4 +1,535 @@
-grammar;
+use std::str::FromStr;
+use crate::*;
 
-pub Layout = {
+grammar(layout: &mut Layout);
+
+pub XtrakCadLayout: () = {
+    layout1 ENDTRACKS EOL
 };
+
+layout1: () = {
+    null,
+    definition layout1,
+};
+
+definition: () = {
+    version,
+    title,
+    mapscale,
+    roomsize,
+    scale,
+    layers,
+    structure,
+    draw,
+    cornu,
+//    curve,
+//    bezier,
+//    bzrlin,
+//    straight,
+//    turnout,
+//    turntable,
+//    car,
+//    joint,
+//    note,
+//    text,
+//    block,
+//    switchmotor,
+//    signal,
+//    sensor,
+//    control,
+    EOL,
+};    
+
+    
+version: () = {
+    VERSION <UINTEGER> <UINTEGER> DOT <UINTEGER> DOT <UINTEGER> EOL => layout.SetVersion(<>),
+};
+
+title: () = {
+    TITLE <UINTEGER> <STRINGTOEOL> EOL => layout.SetTitle(<>),
+};
+
+mapscale: () = {
+    MAPSCALE <UINTEGER> EOL => layout.SetMapscale(<>),
+};
+
+roomsize: () = {
+    ROOMSIZE  <FLOAT>  X  <FLOAT> EOL => layout.SetRoomsize(<>),
+}; 
+
+scale: () = {
+    SCALE <scalename> EOL => layout.SetScale(<>),
+}
+
+scalename: Scale = {
+    HO => Scale::HO,
+    N  => Scale::N,
+    O  => Scale::O,
+    G  => Scale::G,
+};
+
+layers: () = {
+     LAYERS <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> 
+            <UINTEGER> <UINTEGER> <UINTEGER> <STRING> <UINTEGER> <UINTEGER> 
+            <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+            layout.AddLayer(<>),
+      LAYERS CURRENT <UINTEGER> EOL => layout.SetCurrentLayer(<>),
+};
+
+structure: () = {
+     STRUCTURE <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> 
+                <scalename> <UINTEGER> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <STRING> EOL <adjopt> <pieropt> <structbody> ENDSEGS EOL => 
+     layout.AddStructure(<>),
+
+
+};
+
+structbody: StructureBody = {
+            null => StructureBody::new(),
+            <e:structbodyelt> <b:structbody> => StructureBody::Append(e,b),
+};
+
+structbodyelt: StructureBodyElement = {
+         D <FLOAT> <FLOAT> EOL => StructureBodyElement::D(<>),
+         L <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> EOL => StructureBodyElement::L(<>),
+         M <UINTEGER> <UINTEGER>  <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> <UINTEGER> EOL 
+                => StructureBodyElement::M(<>),
+         F <UINTEGER> <UINTEGER> <FLOAT> <UINTEGER> <UINTEGERorNULL> EOL 
+            <fblock> => StructureBodyElement::F(<>),
+         A <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            <FLOAT> <FLOAT>  EOL => StructureBodyElement::A(<>),
+         B <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+            <FLOAT> <UINTEGER> <UINTEGER> EOL => StructureBodyElement::B(<>),
+         Q <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+            <FLOAT> <UINTEGER> EOL => StructureBodyElement::Q(<>),
+         G <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            EOL => StructureBodyElement::G(<>),
+         Y <UINTEGER> <UINTEGER> <FLOAT> <UINTEGER> <UINTEGER> EOL <fblock>
+            => StructureBodyElement::Y(<>),
+         Z <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> <STRING> EOL
+            => StructureBodyElement::Z(<>),
+         H <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> 
+            <FLOAT> <FLOAT> <FLOAT> EOL SUBSEGS EOL <bzlsegments> SUBSEND EOL
+            => StructureBodyElement::H(<>),
+};
+
+adjopt: Option<(f64, f64)> = {
+    null => None,
+    ADJUSTABLE <FLOAT> <FLOAT> EOL => Some((<>)),
+};
+
+pieropt: Option<(f64, String)>= {
+    null => None,
+    PIER <FLOAT> <STRING> EOL => Some((<>)),
+};
+
+UINTEGERorNULL: Option<u32> = {
+    null => None,
+    <UINTEGER> => Some(<>),
+};
+
+fblock: FBlock = {
+    null => FBlock::new(),
+    <e:fblock1> <b:fblock> => FBlock::Append(e,b),
+};
+
+fblock1: FBlockElement = {
+    <FLOAT> <FLOAT> <UINTEGER> EOL => FBlockElement(<>),
+};
+
+bzlsegments: BZLSegments = {
+    null => BZLSegments::new(),
+    <e:bzlsegment> <b:bzlsegments> => BZLSegments::Append(e,b),
+};
+            
+bzlsegment: StructureBodyElement = {
+         L <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> EOL => StructureBodyElement::L(<>),
+         A <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            <FLOAT> <FLOAT>  EOL => StructureBodyElement::A(<>),
+};
+
+draw: () = {
+    DRAW <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> <FLOAT>
+         <UINTEGER> <FLOAT> EOL <structbody> ENDSEGS EOL =>
+         layout.AddDrawing(<>),
+};
+
+bzrlin: () = {
+    BZRLIN <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename>
+           <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> 
+           <FLOAT> <UINTEGER> <FLOAT> <FLOAT> EOL <bzrlinbody>  ENDSEGS EOL 
+                => layout.AddBZRLine(<>),
+};
+
+bzrlinbody: BZRLineBody = {
+    null => BZRLineBody::new(),
+    <e:bzrlinbodyelt> <b:bzrlinbody> => BZRLineBody::Append(e,b),
+};
+
+bzrlinbodyelt: StructureBodyElement = {
+         A <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            <FLOAT> <FLOAT>  EOL => StructureBodyElement::A(<>),
+         L <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> EOL => StructureBodyElement::L(<>),
+         H <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> 
+            <FLOAT> <FLOAT> <FLOAT> EOL SUBSEGS EOL <bzlsegments> SUBSEND EOL
+            => StructureBodyElement::H(<>),
+};
+
+cornu: () = {
+    CORNU <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename>
+          <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT>
+          <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL <cornubody> ENDSEGS EOL
+            => layout.AddCornu(<>),
+};
+
+cornubody: CornuBody = {
+    null => CornuBody::new(),
+    <e:trackbodyelt> <b:cornubody> => CornuBody::AppendTrack(e,b),
+    <e:cornubodyelt> <b:cornubody> => CornuBody::AppendCornu(e,b),
+};
+
+cornubodyelt: CornuBodyElement = {
+         W <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT>
+           <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL SUBSEGS EOL <bzsegments>
+           SUBSEND EOL => CornuBodyElement(<>),
+};
+
+bzsegments:  CornuBody = {
+    null => CornuBody::new(),
+    <e:bzsegment> <b:bzsegments> => CornuBody::AppendBZSeg(e,b),
+};
+           
+bzsegment: BZSegment = {
+    S <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL
+        => BZSegment::S1(<>),
+    S <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT>
+        <FLOAT> EOL
+        => BZSegment::S2(<>),
+    C <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL
+        => BZSegment::C1(<>),
+    C <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT>
+        <FLOAT> EOL
+        => BZSegment::C2(<>),
+};
+          
+
+trackbody: TrackBody ={
+    null => TrackBody::new(),
+    <e:trackbodyelt> <b:trackbody> => TrackBody::AppendTrack(e,b),
+};
+
+trackbodyelt: TrackBodyElement = {
+    T <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <trackbodyelt1> EOL
+        => TrackBodyElement::T1(<>),
+    T <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <trackbodyelt4> EOL
+        => TrackBodyElement::T4(<>),
+    E <FLOAT> <FLOAT> <FLOAT> <trackbodyelt1> EOL
+        => TrackBodyElement::E1(<>),
+    E <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <trackbodyelt4> EOL
+        => TrackBodyElement::E4(<>),
+};
+
+trackbodyelt1: Option<TrackBodySubElement> = {
+    null => None,
+    <UINTEGER> <FLOAT> <FLOAT> <floatornullorstring>
+        => Some(TrackBodySubElement::T1(<>)),
+};
+
+trackbodyelt4: TrackBodySubElement = {
+    <UINTEGER> <FLOAT> <FLOAT> <floatorstring> <FLOAT> <UINTEGER> <UINTEGER>
+        <UINTEGER> <FLOAT> => TrackBodySubElement::T4(<>),
+};
+
+floatornullorstring: Option<FloatOrString> = {
+    null => None,
+    <floatorstring> => Some(<>),
+};
+
+floatorstring: FloatOrString = {
+    <FLOAT> => FloatOrString::Float(<>),
+    <STRING> => FloatOrString::String(<>),
+};
+
+null: () = {
+    NULL,
+};
+
+STRING: String = {
+    <l:r#""(\\\\|\\"|[^"\\])*""#> => l[1..l.len()-1].to_string()
+};
+
+UINTEGER: u32 = {
+    <r"[0-9]+"> => u32::from_str(<>).unwrap(),
+};
+
+FLOAT: f64 = {
+    r"[+-]?[0-9]+\.[0-9]+" => f64::from_str(<>).unwrap(),
+};
+
+EOL: () = {
+    "\n",
+};
+
+DOT: () = {
+    ".",
+};
+
+STRINGTOEOL: String = {
+    r"[^\n]*" => String::from(<>),
+};
+
+A: () = {
+    "A",
+};
+ADJUSTABLE: () = {
+    "ADJUSTABLE",
+};
+ASPECT: () = {
+    "ASPECT",
+};
+B: () = {
+    "B",
+};
+BEZIER: () = {
+    "BEZIER",
+};
+BLOCK: () = {
+    "BLOCK",
+};
+BZRLIN: () = {
+    "BZRLIN",
+};
+C: () = {
+    "C",
+};
+CAR: () = {
+    "CAR",
+};
+CONTROL: () = {
+    "CONTROL",
+};
+CORNU: () = {
+    "CORNU",
+};
+CURRENT: () = {
+    "CURRENT",
+};
+CURVE: () = {
+    "CURVE",
+};
+D: () = {
+    "D",
+};
+DRAW: () = {
+    "DRAW",
+};
+E: () = {
+    "E",
+};
+ENDBLOCK: () = {
+    "END$BLOCK",
+};
+ENDSEGS: () = {
+    "END$SEGS",
+};
+ENDSIGNAL: () = {
+    "END$SIGNAL",
+};
+ENDTRACKS: () = {
+    "END$TRACKS",
+};
+F: () = {
+    "F",
+};
+G: () = {
+    "G",
+};
+H: () = {
+    "H",
+};
+HO: () = {
+    "HO",
+};
+J: () = {
+    "J",
+};
+JOINT: () = {
+    "JOINT",
+};
+L: () = {
+    "L",
+};
+LAYERS: () = {
+    "LAYERS",
+};
+M: () = {
+    "M",
+};
+MAIN: () = {
+    "MAIN",
+};
+MAPSCALE: () = {
+    "MAPSCALE",
+};
+N: () = {
+    "N",
+};
+NOTE: () = {
+    "NOTE",
+};
+O: () = {
+    "O",
+};
+P: () = {
+    "P",
+};
+PIER: () = {
+    "PIER",
+};
+Q: () = {
+    "Q",
+};
+ROOMSIZE: () = {
+    "ROOMSIZE",
+};
+S: () = {
+    "S",
+};
+SCALE: () = {
+    "SCALE",
+};
+SENSOR: () = {
+    "SENSOR",
+};
+SIGNAL: () = {
+    "SIGNAL",
+};
+STRAIGHT: () = {
+    "STRAIGHT",
+};
+STRUCTURE: () = {
+    "STRUCTURE",
+};
+SUBSEGS: () = {
+    "SUBSEGS",
+};
+SUBSEND: () = {
+    "SUBSEND",
+};
+SWITCHMOTOR: () = {
+    "SWITCHMOTOR",
+};
+T: () = {
+    "T",
+};
+TEXT: () = {
+    "TEXT",
+};
+TITLE: () = {
+    "TITLE",
+};
+TRK: () = {
+    "TRK",
+};
+TURNOUT: () = {
+    "TURNOUT",
+};
+TURNTABLE: () = {
+    "TURNTABLE",
+};
+VERSION: () = {
+    "VERSION",
+};
+W: () = {
+    "W",
+};
+X: () = {
+    "X",
+};
+Y: () = {
+    "Y",
+};
+Z: () = {
+    "Z",
+};
+
+
+
+
+
+extern {
+    type Location = u32;
+    type Error = LexicalError;
+    
+    enum Tok {
+        "\n" => Tok::EOL,
+        "." => Tok::DOT,
+        r"[^\n]*" => Tok::STRINGTOEOL(String),
+        r#""(\\\\|\\"|[^"\\])*""# => Tok::STRING(String),
+        r"[0-9]+" => Tok::UINTEGER(u32),
+        r"[+-]?[0-9]+\.[0-9]+" => Tok::FLOAT(f64),
+        "A" => Tok::A,
+        "ADJUSTABLE" => Tok::ADJUSTABLE,
+        "ASPECT" => Tok::ASPECT,
+        "B" => Tok::B,
+        "BEZIER" => Tok::BEZIER,
+        "BLOCK" => Tok::BLOCK,
+        "BZRLIN" => Tok::BZRLIN,
+        "C" => Tok::C,
+        "CAR" => Tok::CAR,
+        "CONTROL" => Tok::CONTROL,
+        "CORNU" => Tok::CORNU,
+        "CURRENT" => Tok::CURRENT,
+        "CURVE" => Tok::CURVE,
+        "D" => Tok::D,
+        "DRAW" => Tok::DRAW,
+        "E" => Tok::E,
+        "END$BLOCK" => Tok::ENDBLOCK,
+        "END$SEGS" => Tok::ENDSEGS,
+        "END$SIGNAL" => Tok::ENDSIGNAL,
+        "END$TRACKS" => Tok::ENDTRACKS,
+        "F" => Tok::F,
+        "G" => Tok::G,
+        "H" => Tok::H,
+        "HO" => Tok::HO,
+        "J" => Tok::J,
+        "JOINT" => Tok::JOINT,
+        "L" => Tok::L,
+        "LAYERS" => Tok::LAYERS,
+        "M" => Tok::M,
+        "MAIN" => Tok::MAIN,
+        "MAPSCALE" => Tok::MAPSCALE,
+        "N" => Tok::N,
+        "NOTE" => Tok::NOTE,
+        "O" => Tok::O,
+        "P" => Tok::P,
+        "PIER" => Tok::PIER,
+        "Q" => Tok::Q,
+        "ROOMSIZE" => Tok::ROOMSIZE,
+        "S" => Tok::S,
+        "SCALE" => Tok::SCALE,
+        "SENSOR" => Tok::SENSOR,
+        "SIGNAL" => Tok::SIGNAL,
+        "STRAIGHT" => Tok::STRAIGHT,
+        "STRUCTURE" => Tok::STRUCTURE,
+        "SUBSEGS" => Tok::SUBSEGS,
+        "SUBSEND" => Tok::SUBSEND,
+        "SWITCHMOTOR" => Tok::SWITCHMOTOR,
+        "T" => Tok::T,
+        "TEXT" => Tok::TEXT,
+        "TITLE" => Tok::TITLE,
+        "TRK" => Tok::TRK,
+        "TURNOUT" => Tok::TURNOUT,
+        "TURNTABLE" => Tok::TURNTABLE,
+        "VERSION" => Tok::VERSION,
+        "W" => Tok::W,
+        "X" => Tok::X,
+        "Y" => Tok::Y,
+        "Z" => Tok::Z,
+    }
+}

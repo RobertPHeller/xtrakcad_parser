@@ -9,10 +9,13 @@ keywords = ["model-railway", "railroad", "model-railroad", "parser", "cad"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-lalrpop-util = { version = "0.21.0", features = ["lexer", "unicode"] }
+lalrpop-util = { version = "0.21.0", features = ["unicode"] }
+phf = { version = "0.13.1", features = ["macros"] }
+getopts = "0.2"
 
 # Add a build-time dependency on the lalrpop library:
 [build-dependencies]
 lalrpop = "0.22.2"
-
+phf = { version = "0.13.1", default-features = false }
+phf_codegen = "0.13.1"
 
