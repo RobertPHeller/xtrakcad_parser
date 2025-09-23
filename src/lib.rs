@@ -276,7 +276,7 @@ impl FileLocation {
 
 impl fmt::Display for FileLocation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}-{}", self.lineno,self.column)
+        write!(f, "Line:{}/Col:{}", self.lineno,self.column)
     }
 }
 
@@ -705,13 +705,14 @@ pub enum BZSegment {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BZLSegments {
-}
+    elements: Vec<StructureBodyElement>,}
 
 impl BZLSegments {
     pub fn new() -> Self {
-        Self{}
+        Self{elements: Vec::new()}
     }
-    pub fn Append(e: StructureBodyElement, b:BZLSegments) -> Self {
+    pub fn Append(e: StructureBodyElement, mut b:BZLSegments) -> Self {
+        b.elements.insert(0,e);
         b
     }
 }
@@ -771,13 +772,15 @@ impl StructureBody {
 
 #[derive(Debug)]
 pub struct BZRLineBody {
+    elements: Vec<StructureBodyElement>,
 }
 
 impl BZRLineBody {
     pub fn new() -> Self {
-        Self{}
+        Self{ elements: Vec::new()}
     }
-    pub fn Append(e: StructureBodyElement, b: BZRLineBody) -> Self {
+    pub fn Append(e: StructureBodyElement, mut b: BZRLineBody) -> Self {
+        b.elements.insert(0,e);
         b
     }
 }
@@ -785,8 +788,10 @@ impl BZRLineBody {
 #[derive(Debug)]
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             CornuBody);
+
 #[derive(Debug)]
 pub struct CornuBody {
+    
 }
 
 impl CornuBody {
@@ -826,13 +831,15 @@ pub enum TrackBodySubElement {
 
 #[derive(Debug)]
 pub struct TrackBody {
+    elements: Vec<TrackBodyElement>,
 }
 
 impl TrackBody {
     pub fn new() -> Self {
-        Self{}
+        Self{ elements: Vec::new(),}
     }
-    pub fn AppendTrack(e:TrackBodyElement, b: TrackBody) -> Self {
+    pub fn AppendTrack(e:TrackBodyElement, mut b: TrackBody) -> Self {
+        b.elements.insert(0,e);
         b
     }
 }
