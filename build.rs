@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-21 09:55:38
-//  Last Modified : <250922.1217>
+//  Last Modified : <250922.2100>
 //
 //  Description	
 //
@@ -79,7 +79,7 @@ fn main() {
             .entry("L", "Tok::L")
             .entry("LAYERS", "Tok::LAYERS ")
             .entry("M", "Tok::M")
-            .entry("MAIN", "Tok::MAIN}")
+            .entry("MAIN", "Tok::MAIN")
             .entry("MAPSCALE", "Tok::MAPSCALE")
             .entry("N", "Tok::N ")
             .entry("NOTE", "Tok::NOTE")
@@ -103,7 +103,7 @@ fn main() {
             .entry("TRK", "Tok::TRK")
             .entry("TURNOUT", "Tok::TURNOUT")
             .entry("TURNTABLE", "Tok::TURNTABLE")
-            .entry("VERSION", "Tok::_VERSION")
+            .entry("VERSION", "Tok::VERSION")
             .entry("W", "Tok::W")
             .entry("X", "Tok::X")
             .entry("Y", "Tok::Y")

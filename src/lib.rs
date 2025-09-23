@@ -1,6 +1,8 @@
 use lalrpop_util::lalrpop_mod;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::{self, BufReader};
+use std::str::FromStr;
 
 // Pull in the parser module
 lalrpop_mod!(pub xtrakcad); // synthesized by LALRPOP
@@ -25,13 +27,10 @@ pub enum LayoutError {
 
 use std::fmt;
 
-use std::str::CharIndices;
-
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Tok {
-    RESTOFLINE,
     EOL,
     DOT,
     STRINGTOEOL(String),
@@ -99,219 +98,487 @@ pub enum Tok {
     Z,
 }
 
-
-pub enum LexicalError {
-    UnTerminatedString,
-    UnknownKeyword,
-    IOError(String),
+impl fmt::Display for Tok {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Tok::EOL => write!(f,"Tok::EOL" ),
+            Tok::DOT => write!(f,"Tok::DOT" ),
+            Tok::STRINGTOEOL(s) => write!(f,"Tok::STRINGTOEOL({})",s ),
+            Tok::NULL => write!(f,"Tok::NULL" ),
+            Tok::STRING(s) => write!(f,"Tok::STRING({})", s),
+            Tok::UINTEGER(u) => write!(f,"Tok::UINTEGER({})",u ),
+            Tok::FLOAT(flo) => write!(f,"Tok::FLOAT({})", flo ),
+            Tok::A => write!(f,"Tok::A" ),
+            Tok::ADJUSTABLE => write!(f,"Tok::ADJUSTABLE" ),
+            Tok::ASPECT => write!(f,"Tok::ASPECT" ),
+            Tok::B => write!(f,"Tok::B" ),
+            Tok::BEZIER => write!(f,"Tok::BEZIER" ),
+            Tok::BLOCK => write!(f,"Tok::BLOCK" ),
+            Tok::BZRLIN => write!(f,"Tok::BZRLIN" ),
+            Tok::C => write!(f,"Tok::C" ),
+            Tok::CAR => write!(f,"Tok::CAR" ),
+            Tok::CONTROL => write!(f,"Tok::CONTROL" ),
+            Tok::CORNU => write!(f,"Tok::CORNU" ),
+            Tok::CURRENT => write!(f,"Tok::CURRENT" ),
+            Tok::CURVE => write!(f,"Tok::CURVE" ),
+            Tok::D => write!(f,"Tok::D" ),
+            Tok::DRAW => write!(f,"Tok::DRAW" ),
+            Tok::E => write!(f,"Tok::E" ),
+            Tok::ENDBLOCK => write!(f,"Tok::ENDBLOCK" ),
+            Tok::ENDSEGS => write!(f,"Tok::ENDSEGS" ),
+            Tok::ENDSIGNAL => write!(f,"Tok::ENDSIGNAL" ),
+            Tok::ENDTRACKS => write!(f,"Tok::ENDTRACKS" ),
+            Tok::F => write!(f,"Tok::F" ),
+            Tok::G => write!(f,"Tok::G" ),
+            Tok::H => write!(f,"Tok::H" ),
+            Tok::HO => write!(f,"Tok::HO" ),
+            Tok::J => write!(f,"Tok::J" ),
+            Tok::JOINT => write!(f,"Tok::JOINT" ),
+            Tok::L => write!(f,"Tok::L" ),
+            Tok::LAYERS => write!(f,"Tok::LAYERS" ),
+            Tok::M => write!(f,"Tok::M" ),
+            Tok::MAIN => write!(f,"Tok::MAIN" ),
+            Tok::MAPSCALE => write!(f,"Tok::MAPSCALE" ),
+            Tok::N => write!(f,"Tok::N" ),
+            Tok::NOTE => write!(f,"Tok::NOTE" ),
+            Tok::O => write!(f,"Tok::O" ),
+            Tok::P => write!(f,"Tok::P" ),
+            Tok::PIER => write!(f,"Tok::PIER" ),
+            Tok::Q => write!(f,"Tok::Q" ),
+            Tok::ROOMSIZE => write!(f,"Tok::ROOMSIZE" ),
+            Tok::S => write!(f,"Tok::S" ),
+            Tok::SCALE => write!(f,"Tok::SCALE" ),
+            Tok::SENSOR => write!(f,"Tok::SENSOR" ),
+            Tok::SIGNAL => write!(f,"Tok::SIGNAL" ),
+            Tok::STRAIGHT => write!(f,"Tok::STRAIGHT" ),
+            Tok::STRUCTURE => write!(f,"Tok::STRUCTURE" ),
+            Tok::SUBSEGS => write!(f,"Tok::SUBSEGS" ),
+            Tok::SUBSEND => write!(f,"Tok::SUBSEND" ),
+            Tok::SWITCHMOTOR => write!(f,"Tok::SWITCHMOTOR" ),
+            Tok::T => write!(f,"Tok::T" ),
+            Tok::TEXT => write!(f,"Tok::TEXT" ),
+            Tok::TITLE => write!(f,"Tok::TITLE" ),
+            Tok::TRK => write!(f,"Tok::TRK" ),
+            Tok::TURNOUT => write!(f,"Tok::TURNOUT" ),
+            Tok::TURNTABLE => write!(f,"Tok::TURNTABLE" ),
+            Tok::VERSION => write!(f,"Tok::VERSION" ),
+            Tok::W => write!(f,"Tok::W" ),
+            Tok::X => write!(f,"Tok::X" ),
+            Tok::Y => write!(f,"Tok::Y" ),
+            Tok::Z => write!(f,"Tok::Z" ),
+        }
+    }
 }
 
+impl Tok {
+    pub fn StringValue(self) -> String {
+        match self {
+            Tok::STRING(s) => s,
+            _        => String::new(),
+        }
+    }
+    pub fn U32Value(self) -> u32 {
+        match self {
+            Tok::UINTEGER(u) => u,
+            _           => 0,
+        }
+    }
+    pub fn F64Value(self) -> f64 {
+        match self {
+            Tok::FLOAT(f) => f,
+            _        => 0.0,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)] 
+pub enum LexicalError {
+    UnTerminatedString,
+    UnknownKeyword(String),
+    IOError(String),
+    UnknownCharacter(char),
+}
+
+impl fmt::Display for LexicalError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LexicalError::UnTerminatedString => write!(f, "Lexical Error: unterminated string"),
+            LexicalError::UnknownKeyword(word) => write!(f, "Lexical Error: unknown keyword: {}",word),
+            LexicalError::IOError(message) =>
+                write!(f, "Lexical Error: error reading file: {}",message),
+            LexicalError::UnknownCharacter(ch) =>
+                write!(f, "Lexical Error: unknown character: {}",ch),
+        }
+    }
+}
+
+//impl fmt::Display for ParseError<usize, Tok, LexicalError> {
+//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//    }
+//}    
+
+//use std::str::Chars;
+//use std::iter::Peekable;
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum ScanEOL {
+    Off,
+    Maybe,
+    On,
+}
+
+
 pub struct Lexer<'input> {
-    reader: BufReader<'input>,
-    scaneol: bool,
+    reader: &'input mut BufReader<File>,
     lineno: u32,
-    chars: CharIndices<'input>,
-    first_column: u32,
-    current_column: u32,
-    needline: bool,    
+    first_column: usize,
+    current_column: usize,
+    peekChar: Option<char>,
+    scaneol: ScanEOL,
+    floatenable: bool,
 }
 
 impl<'input> Lexer<'input> {
-    pub fn new(reader: &mut BufReader) -> Self {
-        let linebuffer = String::new();
-        let status = reader.read_line(linebuffer).unwrap();
-        let line: &'input str = &linebuffer;
-        Lexer { reader: reader, scaneol: false, lineno: 1, 
-                chars: line.chars().peekable(), 
-                first_column: 0, current_collumn: 0, needline: false
-                
-        }
+    pub fn new(reader: &'input mut BufReader<File>) -> Self {
+        Lexer { reader: reader, lineno: 1, first_column: 0, 
+                current_column: 0, peekChar: None, scaneol: ScanEOL::Off, 
+                floatenable: true }
     }
-    include!(concat!(env!("OUT_DIR"), "/keywords.rs"));
+    fn PeekChar(&mut self) -> io::Result<Option<char>> {
+        if self.peekChar.is_none() {
+            let mut buffer: [u8; 1] = [0; 1];
+            let status = self.reader.read(&mut buffer)?;
+            if status > 0 {
+                self.peekChar = Some(buffer[0] as char);
+            }
+        }
+        Ok(self.peekChar)
+    }
+    fn ReadChar(&mut self) -> io::Result<Option<char>> {
+        if self.peekChar.is_none() {self.PeekChar()?;}
+        let result = self.peekChar;
+        self.peekChar = None;
+        Ok(result)
+    }
+}
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
+pub struct FileLocation {
+    lineno: u32,
+    column: usize,
 }
 
+impl FileLocation {
+    pub fn new(l: u32, c: usize) -> Self {
+        Self {lineno: l, column: c }
+    }
+}
+
+impl fmt::Display for FileLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}-{}", self.lineno,self.column)
+    }
+}
+
+
+
+include!(concat!(env!("OUT_DIR"), "/keywords.rs"));
+
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Tok, usize, LexicalError>;
+    type Item = Spanned<Tok, FileLocation, LexicalError>;
     fn next(&mut self) -> Option<Self::Item> {
-        fn IsDigit(ch: Option<char>) -> bool {
+        fn IsDigit(ch: char) -> bool {
             match ch {
-                Some('0'..='9') => true,
-                _               => false,
+                '0'..='9' => true,
+                _         => false,
             }
         }
-        fn IsAlpha(ch: Option<char>) -> bool {
+        fn IsAlpha(ch: char) -> bool {
             match ch {
-                Some('a'..='z') => true,
-                Some('A'..='Z') => true,
-                _               => false,
+                'a'..='z' => true,
+                'A'..='Z' => true,
+                _         => false,
             }
         }
-        loop {
-            let mut word: String = String::new();
-            if self.needline {
-                self.lineno += 1;
-                let linebuffer = String::new();
-                let status = match self.reader.read_line(linebuffer) {
-                    Ok(stat) => stat,
-                    Err(message) return Some(Err(LexicalError::IOError(message.to_string))),
-                };
-                if status == 0 {return None;} // EOF
-                let line: &'input str = &linebuffer;
-                self.chars = line.chars().peekable();
-                self.first_column = 0;
-                self.current_collumn = 0;
-                self.needline = false;
-            }
-            if self.scaneol {
-                match self.chars.next() {
-                    Some('\n') | None => {
-                        self.scaneol = false;
-                        let result Some(Ok((self.first_column, 
-                                            Tok::STRINGTOEOL(word.clone()),
-                                            self.current_column+1)));
-                        self.first_column = self.current_column+1;
-                        return result;                    
-                    },
-                    Some(ch) => {
-                        word.push(ch.unwrap());
-                        self.current_column += 1;
-                    },
-                };
-            } else {
-                let mut ch = self.chars.next();
-                loop {
-                    match ch {
-                        Some(' ') | Some('\t') => {
-                            ch = self.chars.next();
-                            self.current_column += 1;
-                        },
-                        Some('\n') | None => {
-                            let result =  Some(Ok((self.current_column,
-                                                   Tok::EOL,
-                                                   self.current_column+1)));
-                            self.needline = true;
-                            return result;
-                        },
-                        Some(any) => {break;},
-                    };
-                };
-                if ch == Some('#') {
-                    while self.chars.next().is_some() {
-                        self.current_column += 1;
-                    }
-                    let result =  Some(Ok((self.current_column,
-                                           Tok::EOL,
-                                           self.current_column+1)));
-                    self.needline = true;
-                    return result;
-                }
-                if IsDigit(ch) ||
-                    ((ch == Some('+') || ch == Some('-')) &&
-                        IsDigit(self.chars.peek())) {
-                    word.push(ch.unwrap());
-                    self.current_column += 1;
-                    ch = self.chars.next();
-                    while IsDigit(ch) {
-                        word.push(ch.unwrap());
-                        ch = self.chars.next();
-                        self.current_column += 1;
-                    }
-                    if ch == Some('.')
-                    {
-                        word.push(ch.unwrap());
-                        ch = self.chars.next();
-                        self.current_column += 1;
-                        while IsDigit(ch) {
-                            word.push(ch.unwrap());
-                            ch = self.chars.next();
-                            self.current_column += 1;
+        let mut word: String = String::new();
+        let mut ch: char;
+        match self.ReadChar() {
+            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+            Ok(nextChar) => {
+                if nextChar.is_none() {return None;}
+                ch = nextChar.unwrap();
+            },
+        };
+        eprintln!("*** Lexer::next(): lineno is {}, first_column is {}, current_column is {}",
+                self.lineno, self.first_column, self.current_column);
+        eprintln!("*** Lexer::next(): ch = '{}'",ch);
+        eprintln!("*** Lexer::next(): self.scaneol is {:?}",self.scaneol);
+        if self.scaneol == ScanEOL::On {
+            while ch != '\n' {
+                word.push(ch);
+                self.current_column += 1;
+                match self.ReadChar() {
+                    Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                    Ok(nextChar) => {
+                        if nextChar.is_none() {
+                            ch = '\n';
+                        } else {
+                            ch = nextChar.unwrap();
                         }
-                        let f: f64 = f64::from_str(&word);
-                        let result = Some(Ok((self.first_column,
-                                              Tok::FLOAT(f),
-                                              self.current_column+1)));
-                        self.first_column = self.current_column+1;
-                        return result;
+                    },
+                };
+            }
+            self.peekChar = Some(ch);
+            let first = FileLocation::new(self.lineno,self.first_column);
+            let last = FileLocation::new(self.lineno,self.current_column);
+            self.first_column = self.current_column + 1;
+            self.scaneol = ScanEOL::Off;
+            return Some(Ok((first,Tok::STRINGTOEOL(word.clone()),last)));
+        } else {
+            while ch == ' ' || ch == '\t' {
+                self.current_column += 1;
+                match self.ReadChar() {
+                    Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                    Ok(nextChar) => {
+                        if nextChar.is_none() {
+                            ch = '\n';
+                        } else {
+                            ch = nextChar.unwrap();
+                        }
+                    },
+                };
+            }
+            if ch == '\n' {
+                let first = FileLocation::new(self.lineno,self.first_column);
+                let last  = FileLocation::new(self.lineno,self.current_column + 1);
+                self.first_column = 0;
+                self.current_column = 0;
+                self.lineno += 1;
+                return Some(Ok((first,Tok::EOL,last)));
+            }
+            if ch == '#' {
+                while ch != '\n' {
+                    self.current_column += 1;
+                    match self.ReadChar() {
+                        Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                        Ok(nextChar) => {
+                            if nextChar.is_none() {
+                                ch = '\n';
+                            } else {
+                                ch = nextChar.unwrap();
+                            }
+                        },
+                    };
+                }
+                let first = FileLocation::new(self.lineno, self.first_column);
+                let last = FileLocation::new(self.lineno,self.current_column + 1);
+                self.first_column = 0;
+                self.current_column = 0;
+                self.lineno += 1;
+                return Some(Ok((first,Tok::EOL,last))); 
+            }
+            let mut peekch: char;
+            match self.PeekChar() {
+                Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                Ok(nextChar) => {
+                    if nextChar.is_none() {
+                        peekch = '\n';
+                    } else {
+                        peekch = nextChar.unwrap();
                     }
-                    let ui: u32 = u32::from_str(&word);
-                    let result = Some(Ok((self.first_column,
-                                          Tok::UINTEGER(ui),
-                                          self.current_column+1)));
+                },
+            };
+            if IsDigit(ch) ||
+                    ((ch == '+' || ch == '-') &&
+                        IsDigit(peekch)) {
+                word.push(ch);
+                self.current_column += 1;
+                match self.ReadChar() {
+                    Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                    Ok(nextChar) => {
+                        if nextChar.is_none() { 
+                            ch = '\n';
+                        } else {
+                            ch = nextChar.unwrap();
+                        }
+                    },
+                };
+                while IsDigit(ch) {
+                    word.push(ch);
+                    match self.ReadChar() {
+                        Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                        Ok(nextChar) => {
+                            if nextChar.is_none() { 
+                                ch = '\n';
+                            } else {
+                                ch = nextChar.unwrap();
+                            }
+                        },
+                    };
+                    self.current_column += 1;
+                }
+                if self.floatenable && ch == '.' {
+                    word.push(ch);
+                    match self.ReadChar() {
+                        Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                        Ok(nextChar) => {
+                            if nextChar.is_none() { 
+                                ch = '\n';
+                            } else {
+                                ch = nextChar.unwrap();
+                            }
+                        },
+                    };
+                    self.current_column += 1;
+                    while IsDigit(ch) {
+                        word.push(ch);
+                        match self.ReadChar() {
+                            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                            Ok(nextChar) => {
+                                if nextChar.is_none() { 
+                                    ch = '\n';
+                                } else {
+                                    ch = nextChar.unwrap();
+                                }
+                            },
+                        };
+                        self.current_column += 1;
+                    }
+                    self.peekChar = Some(ch);
+                    let f: f64 = f64::from_str(&word).unwrap();
+                    let result = Some(Ok((FileLocation::new(self.lineno,self.first_column),
+                                          Tok::FLOAT(f),
+                                          FileLocation::new(self.lineno,self.current_column+1))));
                     self.first_column = self.current_column+1;
                     return result;
-                } else if IsAlpha(ch) {
-                    while IsAlpha(ch) || ch == Some('$') {
-                        word.push(ch.unwrap().to_ascii_uppercase());
-                        ch = self.chars.next();
-                        self.current_column += 1;
-                    }
-                    let firstColumn = self.first_column;
-                    let lastColumn = self.current_column + 1;
-                    let token = KEYWORDS.get(keyword).cloned();
-                    if token.is_none() {
-                        return Some(Err(LexicalError::UnknownKeyword));
-                    } else {
-                        return Some(Ok((firstColumn,token.unwrap(),lastColumn)));
-                    }
-                } else if ch == Some('"') {
-                    let mut endOfString: bool = false;
-                    ch = self.chare.next();
-                    self.current_column += 1;
-                    while !endOfString && ch != Some('\n') && !ch.is_none() {
-                        if ch == Some('\\') {
-                            ch = self.chare.next(); 
-                            self.current_column += 1; 
-                            word.push(ch,unwrap_or(' '));
-                            ch = self.chare.next();
-                            if ch.is_none() {
-                                self.lineno += 1;
-                                let linebuffer = String::new();
-                                let status = match self.reader.read_line(linebuffer) {
-                                    Ok(stat) => stat,
-                                    Err(message) return Some(Err(LexicalError::IOError(message.to_string))),
-                                };
-                                if status == 0 {return None;} // EOF
-                                let line: &'input str = &linebuffer;
-                                self.chars = line.chars().peekable();
-                                self.first_column = 0;
-                                self.current_collumn = 0;
-                                self.needline = false;
-                            }
-                        } else if ch == Some('"') {
-                            if self.chars.peek() == Some('"') {
-                                ch = self.chare.next();
-                                self.current_collumn += 1;
-                                word.push(ch.unwrap());
-                            } else {
-                                endOfString = true;
-                            }
-                        } else {
-                            word.push(ch.unwrap());
-                            self.current_collumn += 1;
-                            ch = self.chare.next(); 
-                        }
-                    }
-                    if ch != Some('"') {
-                        return Some(Err(LexicalError::UnTerminatedString));
-                    } else {
-                        ch = self.chare.next();
-                        self.current_collumn += 1; 
-                        let firstCol = self.first_column;
-                        let lastCol = self.current_collumn += 1;
-                        self.first_column = lastCol + 1;
-                        return Some(Ok((firstCol,Tok::STRING(word.clone()),lastCol)));
-                    }
-                } else {
-                    if ch == Some('.') {
-                        self.current_collumn += 1; 
-                        let firstCol = self.first_column;
-                        let lastCol = self.current_collumn;
-                        self.first_column = lastCol+1;
-                        ch = self.chare.next();
-                        return Some(Ok((firstCol,Tok::DOT,lastCol)));
-                    } else {
-                    }
                 }
+                self.peekChar = Some(ch);
+                let ui: u32 = u32::from_str(&word).unwrap();
+                let result = Some(Ok((FileLocation::new(self.lineno,self.first_column),
+                                      Tok::UINTEGER(ui),
+                                      FileLocation::new(self.lineno,self.current_column+1))));
+                self.first_column = self.current_column+1;
+                if self.scaneol == ScanEOL::Maybe {self.scaneol = ScanEOL::On;}
+                return result;
+            } else if IsAlpha(ch) {
+                while IsAlpha(ch) || ch == '$' {
+                    word.push(ch.to_ascii_uppercase());
+                    match self.ReadChar() {
+                        Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                        Ok(nextChar) => {
+                            if nextChar.is_none() { 
+                                ch = '\n';
+                            } else {
+                                ch = nextChar.unwrap();
+                            }
+                        },
+                    };
+                    self.current_column += 1;
+                }
+                self.peekChar = Some(ch);
+                let firstColumn = FileLocation::new(self.lineno,self.first_column);
+                let lastColumn = FileLocation::new(self.lineno,self.current_column + 1);
+                self.first_column = self.current_column + 1;
+                let token = KEYWORDS.get(&word).cloned();
+                if token.is_none() {
+                    return Some(Err(LexicalError::UnknownKeyword(word)));
+                } else {
+                    let tok = token.unwrap();
+                    match tok {
+                        Tok::TITLE => {self.scaneol = ScanEOL::Maybe;},
+                        Tok::VERSION => {self.floatenable = false;},
+                        _            => {
+                            self.scaneol = ScanEOL::Off;
+                            self.floatenable = true;
+                        },
+                    };
+                    return Some(Ok((firstColumn,tok,lastColumn)));
+                }
+            } else if ch == '"' {
+                let mut endOfString: bool = false;
+                match self.ReadChar() {
+                    Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                    Ok(nextChar) => {
+                        if nextChar.is_none() { 
+                            ch = '\n';
+                        } else {
+                            ch = nextChar.unwrap();
+                        }
+                    },
+                };
+                self.current_column += 1;
+                while !endOfString && ch != '\n' {
+                    if ch == '\\' {
+                        match self.ReadChar() {
+                            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                            Ok(nextChar) => {
+                                if nextChar.is_none() { 
+                                    ch = '\n';
+                                } else {
+                                    ch = nextChar.unwrap();
+                                }
+                            },
+                        };
+                        self.current_column += 1; 
+                        word.push(ch);
+                        match self.ReadChar() {
+                            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                            Ok(nextChar) => {
+                                if nextChar.is_none() { 
+                                    ch = '\n';
+                                } else {
+                                    ch = nextChar.unwrap();
+                                }
+                            },
+                        };
+                    } else if ch == '"' {
+                        match self.PeekChar() {
+                            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                            Ok(nextChar) => {
+                                if nextChar.is_none() {
+                                    peekch = '\n';
+                                } else {
+                                    peekch = nextChar.unwrap();
+                                }
+                            },
+                        };
+                        if peekch == '"' {
+                            ch = peekch;
+                            self.peekChar = None;
+                            self.current_column += 1;
+                            word.push(ch);
+                        } else {
+                            endOfString = true;
+                        }
+                    } else if ch != '\n' {
+                        word.push(ch);
+                        self.current_column += 1;
+                        match self.ReadChar() {
+                            Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                            Ok(nextChar) => {
+                                if nextChar.is_none() { 
+                                    ch = '\n';
+                                } else {
+                                    ch = nextChar.unwrap();
+                                }
+                            },
+                        };
+                    } else {
+                        return Some(Err(LexicalError::UnTerminatedString));
+                    }    
+                }
+                self.current_column += 1; 
+                let firstCol = FileLocation::new(self.lineno,self.first_column);
+                let lastCol = FileLocation::new(self.lineno,self.current_column + 1);
+                self.first_column = self.current_column + 1;
+                return Some(Ok((firstCol,Tok::STRING(word.clone()),lastCol)));
+            } else if ch == '.' {
+                self.current_column += 1; 
+                let firstCol = FileLocation::new(self.lineno,self.first_column);
+                let lastCol = FileLocation::new(self.lineno,self.current_column);
+                self.first_column = self.current_column+1;
+                return Some(Ok((firstCol,Tok::DOT,lastCol)));
+            } else {
+                return Some(Err(LexicalError::UnknownCharacter(ch)));
             }
         }
     }
@@ -343,7 +610,7 @@ impl fmt::Display for LayoutError {
 impl Layout {
     pub fn new(layoutfilename: String) -> Result<Self, LayoutError> {
         let mut this = Self{};
-        let mut file = match File::open(&layoutfilename) {
+        let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
                 return Err(LayoutError::FileError(message.to_string()));
@@ -361,10 +628,12 @@ impl Layout {
         Ok(this)
     }
     pub fn SetVersion(&mut self,fver: u32, major: u32, minor: u32, release: u32) {
+        eprintln!("*** Layout::SetVersion({},{},{},{})",fver,major,minor,release);
     }
-    pub fn SetTitle(&mut self,level: u32, text: &str) {
+    pub fn SetTitle(&mut self,level: u32, text: String) {
+        eprintln!("*** Layout::SetTitle({},'{}')",level,text);
     }
-    pub fn SetMapscale(&mut self,mapscale: i32) {
+    pub fn SetMapscale(&mut self,mapscale: u32) {
     }
     pub fn SetRoomsize(&mut self,width: f64, height: f64) {
     }

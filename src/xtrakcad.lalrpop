@@ -1,4 +1,4 @@
-use std::str::FromStr;
+//use std::str::FromStr;
 use crate::*;
 
 grammar(layout: &mut Layout);
@@ -256,19 +256,19 @@ floatorstring: FloatOrString = {
 };
 
 null: () = {
-    NULL,
+    "",
 };
 
 STRING: String = {
-    <l:r#""(\\\\|\\"|[^"\\])*""#> => l[1..l.len()-1].to_string()
+    <l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),
 };
 
 UINTEGER: u32 = {
-    <r"[0-9]+"> => u32::from_str(<>).unwrap(),
+    <u:r"[0-9]+"> => u.U32Value(),
 };
 
 FLOAT: f64 = {
-    r"[+-]?[0-9]+\.[0-9]+" => f64::from_str(<>).unwrap(),
+    <f:r"[+-]?[0-9]+\.[0-9]+"> => f.F64Value(),
 };
 
 EOL: () = {
@@ -280,7 +280,7 @@ DOT: () = {
 };
 
 STRINGTOEOL: String = {
-    r"[^\n]*" => String::from(<>),
+    <s:r"[^\n]*"> => s.StringValue(),
 };
 
 A: () = {
@@ -378,7 +378,7 @@ MAPSCALE: () = {
 };
 N: () = {
     "N",
-};
+    };
 NOTE: () = {
     "NOTE",
 };
@@ -463,16 +463,17 @@ Z: () = {
 
 
 extern {
-    type Location = u32;
+    type Location = FileLocation;
     type Error = LexicalError;
     
     enum Tok {
+        "" => Tok::NULL,
         "\n" => Tok::EOL,
         "." => Tok::DOT,
-        r"[^\n]*" => Tok::STRINGTOEOL(String),
-        r#""(\\\\|\\"|[^"\\])*""# => Tok::STRING(String),
-        r"[0-9]+" => Tok::UINTEGER(u32),
-        r"[+-]?[0-9]+\.[0-9]+" => Tok::FLOAT(f64),
+        r"[^\n]*" => Tok::STRINGTOEOL(_s),
+        r#""(\\\\|\\"|[^"\\])*""# => Tok::STRING(_s),
+        r"[0-9]+" => Tok::UINTEGER(_u),
+        r"[+-]?[0-9]+\.[0-9]+" => Tok::FLOAT(_f),
         "A" => Tok::A,
         "ADJUSTABLE" => Tok::ADJUSTABLE,
         "ASPECT" => Tok::ASPECT,
