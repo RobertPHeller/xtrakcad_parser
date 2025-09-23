@@ -22,7 +22,7 @@ definition: () = {
     structure,
     draw,
     cornu,
-//    curve,
+    curve,
 //    bezier,
 //    bzrlin,
 //    straight,
@@ -254,6 +254,13 @@ floatorstring: FloatOrString = {
     <FLOAT> => FloatOrString::Float(<>),
     <STRING> => FloatOrString::String(<>),
 };
+
+curve: () = {
+    CURVE <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT>
+	      <FLOAT> <UINTEGER> <FLOAT> <UINTEGER> <FLOAT> <FLOAT> EOL <trackbody> ENDSEGS EOL =>
+	      layout.AddCurve(<>),
+};
+
 
 STRING: String = {
     <l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),

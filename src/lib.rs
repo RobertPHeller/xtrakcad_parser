@@ -671,12 +671,28 @@ impl Layout {
                       line_width: u32, scale: Scale, visible: u32, X1: f64,
                       Y1: f64,X2: f64,Y2: f64,X3: f64,Y3: f64,X4: f64,Y4: f64,
                       pad3: u32,desc_X: f64,desc_Y: f64, body: BZRLineBody) {
+        eprintln!("*** Layout::AddBZRLine({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
+                    index,layer,pad1,pad2,line_width,scale,visible,X1,Y1,X2,Y2,
+                    X3,Y3,X4,Y4,pad3,desc_X,desc_Y,body);
     }
     pub fn AddCornu(&mut self,index: u32,layer: u32,width: u32,pad1: u32,
                     pad2: u32,scale: Scale,visible: u32,pos1x: f64,pos1y: f64,
                     angle1: f64,radius1: f64,center1x: f64,center1y: f64,
                     pos2x: f64,pos2y: f64,angle2: f64,radius2: f64,
                     center2x: f64,center2y: f64,body: CornuBody) {
+        eprintln!("*** Layout::AddCornu({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
+                    index,layer,width,pad1,pad2,scale,visible,pos1x,pos1y,
+                    angle1,radius1,center1x,center1y,pos2x,pos2y,angle2,
+                    radius2,center2x,center2y,body);
+    }
+    pub fn AddCurve(&mut self,index: u32, layer: u32, line_width: u32, 
+                    pad1: u32, pad2: u32, scale: Scale, flags: u32, 
+                    center_X: f64, centerY: f64, pad3: u32, radius: f64, 
+                    helix_turns: u32, desc_X: f64, desc_Y: f64, 
+                    trackbody: TrackBody) {
+        eprintln!("*** Layout::AddCurve({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{:?})",
+                    index,layer,pad1,pad2,line_width,scale,flags,center_X,
+                    centerY,pad3,radius,helix_turns,desc_X,desc_Y,trackbody);
     }
 }
 
@@ -766,9 +782,10 @@ impl BZRLineBody {
     }
 }
 
+#[derive(Debug)]
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             CornuBody);
-
+#[derive(Debug)]
 pub struct CornuBody {
 }
 
@@ -787,11 +804,13 @@ impl CornuBody {
     }
 }
 
+#[derive(Debug)]
 pub enum FloatOrString {
     Float(f64),
     String(String),
 }
 
+#[derive(Debug)]
 pub enum TrackBodyElement {
     T1(u32,f64,f64,f64,Option<TrackBodySubElement>),
     T4(u32,u32,f64,f64,f64,TrackBodySubElement),
@@ -799,11 +818,13 @@ pub enum TrackBodyElement {
     E4(u32,f64,f64,f64,TrackBodySubElement),
 }
 
+#[derive(Debug)]
 pub enum TrackBodySubElement {
     T1(u32,f64,f64,Option<FloatOrString>),
     T4(u32,f64,f64,FloatOrString,f64,u32,u32,u32,f64),
 }
 
+#[derive(Debug)]
 pub struct TrackBody {
 }
 
