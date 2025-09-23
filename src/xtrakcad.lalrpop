@@ -23,7 +23,7 @@ definition: () = {
     draw,
     cornu,
     curve,
-//    bezier,
+    bezier,
 //    bzrlin,
 //    straight,
 //    turnout,
@@ -261,6 +261,28 @@ curve: () = {
 	      layout.AddCurve(<>),
 };
 
+
+bezier: () = {
+     BEZIER <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> <scalename> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> <FLOAT> EOL <bezierbody> ENDSEGS EOL =>
+            layout.AddBezier(<>),
+};
+
+bezierbody: BezierBody = {
+    () => BezierBody::new(),
+    <e:bezierbodyelt> <b:bezierbody> => BezierBody::Append(e,b),
+};
+
+bezierbodyelt: BezierBodyElement = {
+    <trackbodyelt> => BezierBodyElement::MakeTrackEnd(<>),
+    C <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+            BezierBodyElement::Curve1(<>),
+    C <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+            BezierBodyElement::Curve2(<>),
+    S <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+            BezierBodyElement::Straight1(<>),
+    S <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+            BezierBodyElement::Straight2(<>),
+};
 
 STRING: String = {
     <l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),

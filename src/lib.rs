@@ -694,6 +694,13 @@ impl Layout {
                     index,layer,pad1,pad2,line_width,scale,flags,center_X,
                     centerY,pad3,radius,helix_turns,desc_X,desc_Y,trackbody);
     }
+    pub fn AddBezier(&mut self,index: u32, layer: u32, twidth: u32, color: u32,
+                     pad1: f64, scale: Scale, vis: u32, X1: f64, Y1: f64, 
+                     X2: f64, Y2: f64, X3: f64, Y3: f64, X4: f64, Y4: f64, 
+                     pad2: u32, desc_X: f64, desc_Y: f64, body: BezierBody) {
+        eprintln!("*** Layout::AddBezier({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
+                    index,layer,twidth,color,pad1,scale,vis,X1,Y1,X2,Y2,X3,Y3,X4,Y4,pad2,desc_X,desc_Y,body);
+    }
 }
 
 pub enum BZSegment {
@@ -842,4 +849,46 @@ impl TrackBody {
         b.elements.insert(0,e);
         b
     }
+}
+
+#[derive(Debug)]
+pub struct BezierBody {
+    elements: Vec<BezierBodyElement>,
+}
+
+impl BezierBody {
+    pub fn new() -> Self {
+        Self {elements: Vec::new()}
+    }
+    pub fn Append(e: BezierBodyElement, mut b: BezierBody) -> Self {
+        b.elements.insert(0,e);
+        b
+    }
+}
+
+#[derive(Debug)]
+pub enum BezierBodyElement {
+    Curve1(u32,f64,f64,f64,f64,f64,f64),
+    Curve2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
+    Straight1(u32,f64,f64,f64,f64,f64),
+    Straight2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
+    T1(u32,f64,f64,f64,Option<TrackBodySubElement>),
+    T4(u32,u32,f64,f64,f64,TrackBodySubElement),
+    E1(f64,f64,f64,Option<TrackBodySubElement>),
+    E4(u32,f64,f64,f64,TrackBodySubElement),
+}
+
+impl BezierBodyElement {
+    pub fn MakeTrackEnd(e:TrackBodyElement) -> BezierBodyElement {
+        match e {
+        TrackBodyElement::T1(a,b,c,d,e) =>
+            BezierBodyElement::T1(a,b,c,d,e),
+        TrackBodyElement::T4(a2,b,c,d,e,f) =>
+            BezierBodyElement::T4(a2,b,c,d,e,f),
+        TrackBodyElement::E1(a,b,c,f) =>
+            BezierBodyElement::E1(a,b,c,f),
+        TrackBodyElement::E4(a,b,c,f,g) =>
+            BezierBodyElement::E4(a,b,c,f,g),
+        }
+    }    
 }
