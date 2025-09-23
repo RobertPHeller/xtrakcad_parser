@@ -101,71 +101,71 @@ pub enum Tok {
 impl fmt::Display for Tok {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Tok::EOL => write!(f,"Tok::EOL" ),
-            Tok::DOT => write!(f,"Tok::DOT" ),
+            Tok::EOL => write!(f,"\\n" ),
+            Tok::DOT => write!(f,"." ),
             Tok::STRINGTOEOL(s) => write!(f,"Tok::STRINGTOEOL({})",s ),
             Tok::NULL => write!(f,"Tok::NULL" ),
-            Tok::STRING(s) => write!(f,"Tok::STRING({})", s),
-            Tok::UINTEGER(u) => write!(f,"Tok::UINTEGER({})",u ),
-            Tok::FLOAT(flo) => write!(f,"Tok::FLOAT({})", flo ),
-            Tok::A => write!(f,"Tok::A" ),
-            Tok::ADJUSTABLE => write!(f,"Tok::ADJUSTABLE" ),
-            Tok::ASPECT => write!(f,"Tok::ASPECT" ),
-            Tok::B => write!(f,"Tok::B" ),
-            Tok::BEZIER => write!(f,"Tok::BEZIER" ),
-            Tok::BLOCK => write!(f,"Tok::BLOCK" ),
-            Tok::BZRLIN => write!(f,"Tok::BZRLIN" ),
-            Tok::C => write!(f,"Tok::C" ),
-            Tok::CAR => write!(f,"Tok::CAR" ),
-            Tok::CONTROL => write!(f,"Tok::CONTROL" ),
-            Tok::CORNU => write!(f,"Tok::CORNU" ),
-            Tok::CURRENT => write!(f,"Tok::CURRENT" ),
-            Tok::CURVE => write!(f,"Tok::CURVE" ),
-            Tok::D => write!(f,"Tok::D" ),
-            Tok::DRAW => write!(f,"Tok::DRAW" ),
-            Tok::E => write!(f,"Tok::E" ),
-            Tok::ENDBLOCK => write!(f,"Tok::ENDBLOCK" ),
-            Tok::ENDSEGS => write!(f,"Tok::ENDSEGS" ),
-            Tok::ENDSIGNAL => write!(f,"Tok::ENDSIGNAL" ),
-            Tok::ENDTRACKS => write!(f,"Tok::ENDTRACKS" ),
-            Tok::F => write!(f,"Tok::F" ),
-            Tok::G => write!(f,"Tok::G" ),
-            Tok::H => write!(f,"Tok::H" ),
-            Tok::HO => write!(f,"Tok::HO" ),
-            Tok::J => write!(f,"Tok::J" ),
-            Tok::JOINT => write!(f,"Tok::JOINT" ),
-            Tok::L => write!(f,"Tok::L" ),
-            Tok::LAYERS => write!(f,"Tok::LAYERS" ),
-            Tok::M => write!(f,"Tok::M" ),
-            Tok::MAIN => write!(f,"Tok::MAIN" ),
-            Tok::MAPSCALE => write!(f,"Tok::MAPSCALE" ),
-            Tok::N => write!(f,"Tok::N" ),
-            Tok::NOTE => write!(f,"Tok::NOTE" ),
-            Tok::O => write!(f,"Tok::O" ),
-            Tok::P => write!(f,"Tok::P" ),
-            Tok::PIER => write!(f,"Tok::PIER" ),
-            Tok::Q => write!(f,"Tok::Q" ),
-            Tok::ROOMSIZE => write!(f,"Tok::ROOMSIZE" ),
-            Tok::S => write!(f,"Tok::S" ),
-            Tok::SCALE => write!(f,"Tok::SCALE" ),
-            Tok::SENSOR => write!(f,"Tok::SENSOR" ),
-            Tok::SIGNAL => write!(f,"Tok::SIGNAL" ),
-            Tok::STRAIGHT => write!(f,"Tok::STRAIGHT" ),
-            Tok::STRUCTURE => write!(f,"Tok::STRUCTURE" ),
-            Tok::SUBSEGS => write!(f,"Tok::SUBSEGS" ),
-            Tok::SUBSEND => write!(f,"Tok::SUBSEND" ),
-            Tok::SWITCHMOTOR => write!(f,"Tok::SWITCHMOTOR" ),
-            Tok::T => write!(f,"Tok::T" ),
-            Tok::TEXT => write!(f,"Tok::TEXT" ),
-            Tok::TITLE => write!(f,"Tok::TITLE" ),
-            Tok::TRK => write!(f,"Tok::TRK" ),
-            Tok::TURNOUT => write!(f,"Tok::TURNOUT" ),
-            Tok::TURNTABLE => write!(f,"Tok::TURNTABLE" ),
-            Tok::VERSION => write!(f,"Tok::VERSION" ),
-            Tok::W => write!(f,"Tok::W" ),
-            Tok::X => write!(f,"Tok::X" ),
-            Tok::Y => write!(f,"Tok::Y" ),
-            Tok::Z => write!(f,"Tok::Z" ),
+            Tok::STRING(s) => write!(f,"STRING({})", s),
+            Tok::UINTEGER(u) => write!(f,"UINTEGER({})",u ),
+            Tok::FLOAT(flo) => write!(f,"FLOAT({})", flo ),
+            Tok::A => write!(f,"A" ),
+            Tok::ADJUSTABLE => write!(f,"ADJUSTABLE" ),
+            Tok::ASPECT => write!(f,"ASPECT" ),
+            Tok::B => write!(f,"B" ),
+            Tok::BEZIER => write!(f,"BEZIER" ),
+            Tok::BLOCK => write!(f,"BLOCK" ),
+            Tok::BZRLIN => write!(f,"BZRLIN" ),
+            Tok::C => write!(f,"C" ),
+            Tok::CAR => write!(f,"CAR" ),
+            Tok::CONTROL => write!(f,"CONTROL" ),
+            Tok::CORNU => write!(f,"CORNU" ),
+            Tok::CURRENT => write!(f,"CURRENT" ),
+            Tok::CURVE => write!(f,"CURVE" ),
+            Tok::D => write!(f,"D" ),
+            Tok::DRAW => write!(f,"DRAW" ),
+            Tok::E => write!(f,"E" ),
+            Tok::ENDBLOCK => write!(f,"ENDBLOCK" ),
+            Tok::ENDSEGS => write!(f,"ENDSEGS" ),
+            Tok::ENDSIGNAL => write!(f,"ENDSIGNAL" ),
+            Tok::ENDTRACKS => write!(f,"ENDTRACKS" ),
+            Tok::F => write!(f,"F" ),
+            Tok::G => write!(f,"G" ),
+            Tok::H => write!(f,"H" ),
+            Tok::HO => write!(f,"HO" ),
+            Tok::J => write!(f,"J" ),
+            Tok::JOINT => write!(f,"JOINT" ),
+            Tok::L => write!(f,"L" ),
+            Tok::LAYERS => write!(f,"LAYERS" ),
+            Tok::M => write!(f,"M" ),
+            Tok::MAIN => write!(f,"MAIN" ),
+            Tok::MAPSCALE => write!(f,"MAPSCALE" ),
+            Tok::N => write!(f,"N" ),
+            Tok::NOTE => write!(f,"NOTE" ),
+            Tok::O => write!(f,"O" ),
+            Tok::P => write!(f,"P" ),
+            Tok::PIER => write!(f,"PIER" ),
+            Tok::Q => write!(f,"Q" ),
+            Tok::ROOMSIZE => write!(f,"ROOMSIZE" ),
+            Tok::S => write!(f,"S" ),
+            Tok::SCALE => write!(f,"SCALE" ),
+            Tok::SENSOR => write!(f,"SENSOR" ),
+            Tok::SIGNAL => write!(f,"SIGNAL" ),
+            Tok::STRAIGHT => write!(f,"STRAIGHT" ),
+            Tok::STRUCTURE => write!(f,"STRUCTURE" ),
+            Tok::SUBSEGS => write!(f,"SUBSEGS" ),
+            Tok::SUBSEND => write!(f,"SUBSEND" ),
+            Tok::SWITCHMOTOR => write!(f,"SWITCHMOTOR" ),
+            Tok::T => write!(f,"T" ),
+            Tok::TEXT => write!(f,"TEXT" ),
+            Tok::TITLE => write!(f,"TITLE" ),
+            Tok::TRK => write!(f,"TRK" ),
+            Tok::TURNOUT => write!(f,"TURNOUT" ),
+            Tok::TURNTABLE => write!(f,"TURNTABLE" ),
+            Tok::VERSION => write!(f,"VERSION" ),
+            Tok::W => write!(f,"W" ),
+            Tok::X => write!(f,"X" ),
+            Tok::Y => write!(f,"Y" ),
+            Tok::Z => write!(f,"Z" ),
         }
     }
 }
@@ -173,7 +173,8 @@ impl fmt::Display for Tok {
 impl Tok {
     pub fn StringValue(self) -> String {
         match self {
-            Tok::STRING(s) => s,
+            Tok::STRING(s) |
+            Tok::STRINGTOEOL(s) => s,
             _        => String::new(),
         }
     }
@@ -308,10 +309,10 @@ impl<'input> Iterator for Lexer<'input> {
                 ch = nextChar.unwrap();
             },
         };
-        eprintln!("*** Lexer::next(): lineno is {}, first_column is {}, current_column is {}",
-                self.lineno, self.first_column, self.current_column);
-        eprintln!("*** Lexer::next(): ch = '{}'",ch);
-        eprintln!("*** Lexer::next(): self.scaneol is {:?}",self.scaneol);
+        //eprintln!("*** Lexer::next(): lineno is {}, first_column is {}, current_column is {}",
+        //        self.lineno, self.first_column, self.current_column);
+        //eprintln!("*** Lexer::next(): ch = '{}'",ch);
+        //eprintln!("*** Lexer::next(): self.scaneol is {:?}",self.scaneol);
         if self.scaneol == ScanEOL::On {
             while ch != '\n' {
                 word.push(ch);
@@ -637,7 +638,7 @@ impl Layout {
         eprintln!("*** Layout::SetMapscale({})",mapscale);
     }
     pub fn SetRoomsize(&mut self,width: f64, height: f64) {
-        eprintln!("*** Layout::SetRoomsize({}<{})",width,height);
+        eprintln!("*** Layout::SetRoomsize({},{})",width,height);
     }
     pub fn SetScale(&mut self,scale: Scale) {
         eprintln!("*** Layout::SetScale({:?})",scale);
@@ -703,18 +704,22 @@ pub struct FBlockElement(f64,f64,u32);
     
 #[derive(Debug, PartialEq, Clone)]
 pub struct FBlock {
+    elememts: Vec<FBlockElement>
 }
 
 impl FBlock {
     pub fn new() -> Self {
         eprintln!("*** FBlock::new()");
-        Self{}
+        Self{ elememts: Vec::new()}
     }
-    pub fn Append(e: FBlockElement, b: FBlock) -> Self {
+    pub fn Append(e: FBlockElement, mut b: FBlock) -> Self {
         eprintln!("*** FBlock::Append({:?},{:?})",e,b);
+        b.elememts.insert(0,e);
         b
     }
 }
+
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StructureBodyElement {
@@ -733,15 +738,17 @@ pub enum StructureBodyElement {
 
 #[derive(Debug)]
 pub struct StructureBody {
+    elememts: Vec<StructureBodyElement>,
 }
 
 impl StructureBody {
     pub fn new() -> Self {
         eprintln!("*** StructureBody::new()");
-        Self {}
+        Self {elememts: Vec::new()}
     }
-    pub fn Append(e: StructureBodyElement, b: StructureBody) -> Self {
+    pub fn Append(e: StructureBodyElement, mut b: StructureBody) -> Self {
         eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
+        b.elememts.insert(0,e);
         b
     }
 }
