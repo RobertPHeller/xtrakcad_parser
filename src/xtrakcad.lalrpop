@@ -8,7 +8,7 @@ pub XtrakCadLayout: () = {
 };
 
 layout1: () = {
-    null,
+    (),
     definition layout1,
 };
 
@@ -86,7 +86,7 @@ structure: () = {
 };
 
 structbody: StructureBody = {
-            null => StructureBody::new(),
+            () => StructureBody::new(),
             <e:structbodyelt> <b:structbody> => StructureBody::Append(e,b),
 };
 
@@ -117,22 +117,22 @@ structbodyelt: StructureBodyElement = {
 };
 
 adjopt: Option<(f64, f64)> = {
-    null => None,
+    () => None,
     ADJUSTABLE <FLOAT> <FLOAT> EOL => Some((<>)),
 };
 
 pieropt: Option<(f64, String)>= {
-    null => None,
+    () => None,
     PIER <FLOAT> <STRING> EOL => Some((<>)),
 };
 
 UINTEGERorNULL: Option<u32> = {
-    null => None,
+    () => None,
     <UINTEGER> => Some(<>),
 };
 
 fblock: FBlock = {
-    null => FBlock::new(),
+    () => FBlock::new(),
     <e:fblock1> <b:fblock> => FBlock::Append(e,b),
 };
 
@@ -141,7 +141,7 @@ fblock1: FBlockElement = {
 };
 
 bzlsegments: BZLSegments = {
-    null => BZLSegments::new(),
+    () => BZLSegments::new(),
     <e:bzlsegment> <b:bzlsegments> => BZLSegments::Append(e,b),
 };
             
@@ -166,7 +166,7 @@ bzrlin: () = {
 };
 
 bzrlinbody: BZRLineBody = {
-    null => BZRLineBody::new(),
+    () => BZRLineBody::new(),
     <e:bzrlinbodyelt> <b:bzrlinbody> => BZRLineBody::Append(e,b),
 };
 
@@ -188,7 +188,7 @@ cornu: () = {
 };
 
 cornubody: CornuBody = {
-    null => CornuBody::new(),
+    () => CornuBody::new(),
     <e:trackbodyelt> <b:cornubody> => CornuBody::AppendTrack(e,b),
     <e:cornubodyelt> <b:cornubody> => CornuBody::AppendCornu(e,b),
 };
@@ -200,7 +200,7 @@ cornubodyelt: CornuBodyElement = {
 };
 
 bzsegments:  CornuBody = {
-    null => CornuBody::new(),
+    () => CornuBody::new(),
     <e:bzsegment> <b:bzsegments> => CornuBody::AppendBZSeg(e,b),
 };
            
@@ -219,7 +219,7 @@ bzsegment: BZSegment = {
           
 
 trackbody: TrackBody ={
-    null => TrackBody::new(),
+    () => TrackBody::new(),
     <e:trackbodyelt> <b:trackbody> => TrackBody::AppendTrack(e,b),
 };
 
@@ -235,7 +235,7 @@ trackbodyelt: TrackBodyElement = {
 };
 
 trackbodyelt1: Option<TrackBodySubElement> = {
-    null => None,
+    () => None,
     <UINTEGER> <FLOAT> <FLOAT> <floatornullorstring>
         => Some(TrackBodySubElement::T1(<>)),
 };
@@ -246,17 +246,13 @@ trackbodyelt4: TrackBodySubElement = {
 };
 
 floatornullorstring: Option<FloatOrString> = {
-    null => None,
+    () => None,
     <floatorstring> => Some(<>),
 };
 
 floatorstring: FloatOrString = {
     <FLOAT> => FloatOrString::Float(<>),
     <STRING> => FloatOrString::String(<>),
-};
-
-null: () = {
-    "",
 };
 
 STRING: String = {

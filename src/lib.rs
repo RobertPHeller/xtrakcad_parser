@@ -634,10 +634,13 @@ impl Layout {
         eprintln!("*** Layout::SetTitle({},'{}')",level,text);
     }
     pub fn SetMapscale(&mut self,mapscale: u32) {
+        eprintln!("*** Layout::SetMapscale({})",mapscale);
     }
     pub fn SetRoomsize(&mut self,width: f64, height: f64) {
+        eprintln!("*** Layout::SetRoomsize({}<{})",width,height);
     }
     pub fn SetScale(&mut self,scale: Scale) {
+        eprintln!("*** Layout::SetScale({:?})",scale);
     }
     pub fn AddLayer(&mut self,lnum: u32,visible: u32,frozen: u32,on_map: u32,
                     color_rgb: u32,module: u32,dont_use_color: u32,
@@ -645,8 +648,10 @@ impl Layout {
                     scale_index: u32,min_track_radius: f64,
                     max_track_grade: f64,tie_length: f64,tie_width: f64,
                     tie_spacing:f64) {
+        eprintln!("*** Layout::AddLayer({},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{})",lnum,visible,frozen,on_map,color_rgb,module,dont_use_color,color_flags,button_off,name,inherit,scale_index,min_track_radius,max_track_grade,tie_length,tie_width,tie_spacing);
     }
     pub fn SetCurrentLayer(&mut self,lnum: u32) {
+        eprintln!("*** Layout::SetCurrentLayer({})",lnum);
     }
     pub fn AddStructure(&mut self,index: u32, layer: u32, lineType: u32, 
                         pad1: u32, pad2: u32, scale: Scale, visible: u32, 
@@ -654,10 +659,12 @@ impl Layout {
                         textfields: String, adjopt: Option<(f64, f64)>, 
                         pieropt: Option<(f64, String)>, 
                         structbody: StructureBody) {
+        eprintln!("*** Layout::AddStructure({},{},{},{},{},{:?},{},{},{},{},{},{},{:?},{:?},{:?})",index,layer,lineType,pad1,pad2,scale,visible,origx,origy,elev,angle,textfields,adjopt,pieropt,structbody);
     }
     pub fn AddDrawing(&mut self,index: u32, layer: u32, lineType: u32,
                         pad1: u32, pad2: u32, start_x: f64, start_y: f64,
                         start: u32, angle: f64, segments: StructureBody) {
+        eprintln!("*** Layout::AddDrawing({},{},{},{},{},{},{},{},{},{:?})",index,layer,lineType,pad1,pad2,start_x,start_y,start,angle,segments);
     }
     pub fn AddBZRLine(&mut self,index: u32, layer: u32, pad1: u32, pad2: u32,
                       line_width: u32, scale: Scale, visible: u32, X1: f64,
@@ -700,9 +707,11 @@ pub struct FBlock {
 
 impl FBlock {
     pub fn new() -> Self {
+        eprintln!("*** FBlock::new()");
         Self{}
     }
     pub fn Append(e: FBlockElement, b: FBlock) -> Self {
+        eprintln!("*** FBlock::Append({:?},{:?})",e,b);
         b
     }
 }
@@ -728,9 +737,11 @@ pub struct StructureBody {
 
 impl StructureBody {
     pub fn new() -> Self {
+        eprintln!("*** StructureBody::new()");
         Self {}
     }
     pub fn Append(e: StructureBodyElement, b: StructureBody) -> Self {
+        eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
         b
     }
 }
