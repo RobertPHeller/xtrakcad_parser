@@ -701,6 +701,12 @@ impl Layout {
         eprintln!("*** Layout::AddBezier({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
                     index,layer,twidth,color,pad1,scale,vis,X1,Y1,X2,Y2,X3,Y3,X4,Y4,pad2,desc_X,desc_Y,body);
     }
+    //STRAIGHT (sp) index (sp) layer (sp) line-width (sp) 0 (sp) 0 (sp) scale (sp) descshow&visibility&no_ties&bridge&roadbed (sp) Desc-x (sp) Desc-y
+    pub fn AddStraught(&mut self,index: u32, layer: u32, line_width: u32, pad1: u32, pad2: u32, scale: Scale, flags: u32 ,Desc_x: f64, Desc_y: f64, body: TrackBody) {
+    }
+    //TURNOUT (sp) index (sp) layer (sp) options (sp) postion (sp) 0 (sp) scale (sp)visible&no_ties&bridge&roadbed (sp)origx (sp) origy (sp) elev (sp) angle (sp) "Manufacturer<tab>Description <tab>Part<tab>"</tab></tab></tab>
+    pub fn AddTurnout(&mut self,index: u32, layer: u32, options: u32, postion: u32, pad1: u32, scale: Scale, flags: u32, origx: f64, origy: f64, elev: u32, angle: f64, tablist: String, adjopt: Option<(f64, f64)>, pieropt: Option<(f64, String)>, body: TurnoutBody) {
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -813,10 +819,6 @@ impl BZRLineBody {
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             BZSegments);
 
-
-
-
-
 #[derive(Debug)]
 pub struct CornuBody {
     trackends: Vec<TrackBodyElement>,
@@ -912,4 +914,72 @@ impl BezierBodyElement {
             BezierBodyElement::E4(a,b,c,f,g),
         }
     }    
+}
+
+#[derive(Debug)] 
+pub struct IntegerList {
+    elements: Vec<u32>,
+}
+
+impl IntegerList {
+    pub fn new() -> Self {
+        Self { elements: Vec::new() }
+    }
+    pub fn Append(e: u32, mut b: IntegerList) -> Self {
+        b.elements.insert(0,e);
+        b
+    }
+}
+
+#[derive(Debug)]
+pub struct TurnoutBody {
+    turnout_elements: Vec<TurnoutBodyElement>,
+    struct_elements:  Vec<StructureBodyElement>,
+}
+
+impl TurnoutBody {
+    pub fn new() -> Self {
+        Self { turnout_elements: Vec::new(), struct_elements: Vec::new(),}
+    }
+    pub fn AppendTurnoutBodyElement(e: TurnoutBodyElement,
+                                    mut b: TurnoutBody) -> Self {
+        b.turnout_elements.insert(0,e);
+        b
+    }
+    pub fn AppendStructureBodyElement(e: StructureBodyElement,
+                                      mut b: TurnoutBody) -> Self {
+        b.struct_elements.insert(0,e); 
+        b
+    }
+}
+
+#[derive(Debug)]
+pub enum TurnoutBodyElement {
+    D(f64,f64),
+    P(String,IntegerList),
+    S1(u32,f64,f64,f64,f64,f64),
+    S2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
+    C1(u32,f64,f64,f64,f64,f64,f64),
+    C2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
+    J1(u32,f64,f64,f64,f64,f64,f64,f64,f64,u32),
+    J2(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,u32),
+    T1(u32,f64,f64,f64,Option<TrackBodySubElement>),
+    T4(u32,u32,f64,f64,f64,TrackBodySubElement),
+    E1(f64,f64,f64,Option<TrackBodySubElement>),
+    E4(u32,f64,f64,f64,TrackBodySubElement),
+}
+
+impl TurnoutBodyElement {
+    pub fn MakeTurnoutEnd(tbelt: TrackBodyElement) -> Self {
+        match tbelt {
+        TrackBodyElement::T1(a,b,c,d,e) =>
+            TurnoutBodyElement::T1(a,b,c,d,e),
+        TrackBodyElement::T4(a2,b,c,d,e,f) =>
+            TurnoutBodyElement::T4(a2,b,c,d,e,f),
+        TrackBodyElement::E1(a,b,c,f) =>
+            TurnoutBodyElement::E1(a,b,c,f),
+        TrackBodyElement::E4(a,b,c,f,g) =>
+            TurnoutBodyElement::E4(a,b,c,f,g),
+        }
+    }
 }

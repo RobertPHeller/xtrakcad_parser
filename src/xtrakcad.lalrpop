@@ -24,8 +24,8 @@ definition: () = {
     cornu,
     curve,
     bezier,
-//    bzrlin,
-//    straight,
+    bzrlin,
+    straight,
 //    turnout,
 //    turntable,
 //    car,
@@ -282,6 +282,51 @@ bezierbodyelt: BezierBodyElement = {
             BezierBodyElement::Straight1(<>),
     S <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
             BezierBodyElement::Straight2(<>),
+};
+
+
+straight: () = {
+    STRAIGHT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT> <FLOAT>
+        EOL <trackbody> ENDSEGS EOL =>
+		    layout.AddStraught(<>),
+};
+
+turnout: () = {
+    TURNOUT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename> <UINTEGER>
+        <FLOAT> <FLOAT> <UINTEGER> <FLOAT> <STRING>  EOL <adjopt> <pieropt> <turnoutbody> ENDSEGS EOL =>
+		  layout.AddTurnout(<>),
+};
+
+turnoutbody: TurnoutBody = {
+    () => TurnoutBody::new(),
+    <e:turnoutbodyelt> <b:turnoutbody> 
+        => TurnoutBody::AppendTurnoutBodyElement(e,b),
+    <e:structbodyelt> <b:turnoutbody>
+        => TurnoutBody::AppendStructureBodyElement(e,b),
+};
+
+turnoutbodyelt: TurnoutBodyElement = {
+    <trackbodyelt> => TurnoutBodyElement::MakeTurnoutEnd(<>),
+    D <FLOAT> <FLOAT> EOL => TurnoutBodyElement::D(<>),
+    P <STRING> <intlist> EOL => TurnoutBodyElement::P(<>),
+    S <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+        TurnoutBodyElement::S1(<>),
+    S <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL
+        => TurnoutBodyElement::S2(<>),
+    C <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL =>
+        TurnoutBodyElement::C1(<>),
+    C <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> EOL
+        => TurnoutBodyElement::C2(<>),
+    J <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> EOL
+        => TurnoutBodyElement::J1(<>),
+    J <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> EOL
+        => TurnoutBodyElement::J2(<>),
+    
+};
+
+intlist: IntegerList = {
+    () => IntegerList::new(),
+    <b:intlist> <e:UINTEGER> => IntegerList::Append(e,b),
 };
 
 STRING: String = {
