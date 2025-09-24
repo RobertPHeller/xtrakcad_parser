@@ -783,6 +783,32 @@ impl Layout {
         eprintln!("*** Layout::AddText({},{},{},{},{},{},{},{},{},{})",
                   index,layer,color,font_size,pad1,x,y,check_box,text,rotation);
     }
+    pub fn AddBlock(&mut self,index: u32, name: String, script: String, tracklist: IntegerList) {
+        eprintln!("*** Layout::AddBlock({},{},{},{:?})",index,name,script,tracklist);
+    }
+    pub fn AddSwitchMotor(&mut self,index: u32,turnout: u32,name: String,
+                          normal: String ,reverse: String,pointsense: String) {
+        eprintln!("*** Layout::AddSwitchMotor({},{},{},{},{},{})",
+                    index,turnout,name,normal,reverse,pointsense);
+    }
+    pub fn AddSignal(&mut self,index: u32,layer: u32, scale: Scale, 
+                     visible: u32, X: f64, Y: f64, A: f64, numheads: u32,
+                     name: String, aspectlist: AspectList) {
+        eprintln!("*** Layout::AddSignal({},{},{:?},{}.{},{},{},{},{},{:?})",
+                    index,layer,scale,visible,X,Y,A,numheads,name,aspectlist);
+    }
+    pub fn AddSensor(&mut self,index: u32,layer: u32,scale: Scale,visible: u32,
+                     X: f64,Y: f64,name: String,script: String) {
+        eprintln!("*** Layout::AddSensor({},{},{:?},{},{},{},{},{})",
+                  index,layer,scale,visible,X,Y,name,script);
+    }
+    pub fn AddControl(&mut self,index: u32,layer: u32,scale: Scale,
+                     visible: u32, start_x: f64, start_y: f64, 
+                     name: String, on_script: String, off_script: String) {
+        eprintln!("*** Layout::AddControl({},{},{:?},{},{},{},{},{},{})",
+                  index,layer,scale,visible,start_x,start_y,name,on_script,
+                  off_script);
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1062,3 +1088,21 @@ impl TurnoutBodyElement {
 }
 #[derive(Debug)]
 pub struct CarAux(u32,u32,f64,f64,f64,TrackBody);
+
+#[derive(Debug)]
+pub struct Aspect(String,String);
+
+#[derive(Debug)]
+pub struct AspectList {
+    aspects: Vec<Aspect>,
+}
+
+impl AspectList {
+    pub fn new() -> Self {
+        Self{aspects: Vec::new()}
+    }
+    pub fn AddAspect(mut b: AspectList, a: String, s: String) -> Self {
+        b.aspects.insert(0,Aspect(a,s));
+        b
+    }
+}

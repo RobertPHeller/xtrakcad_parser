@@ -32,8 +32,8 @@ definition: () = {
     joint,
     note,
     text,
-//    block,
-//    switchmotor,
+    block,
+    switchmotor,
 //    signal,
 //    sensor,
 //    control,
@@ -410,9 +410,49 @@ text: () = {
         layout.AddText(<>),
 };
 
+block: () = {
+    //     index      name     script       tracklist
+    BLOCK <UINTEGER> <STRING> <STRING> EOL <intlist> ENDBLOCK EOL
+        => layout.AddBlock(<>),
+};
+
+switchmotor: () = {
+    //	        index      turnout#    name     normal   reverse pointsense
+    SWITCHMOTOR <UINTEGER> <UINTEGER> <STRING> <STRING> <STRING> <STRING> EOL
+        => layout.AddSwitchMotor(<>),
+};
+
+signal: () = {
+    //     index        layer     scale         visible    X      Y        A 
+    SIGNAL <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT> <FLOAT> <FLOAT>
+    //       numheads  name          aspectlist
+            <UINTEGER> <STRING> EOL <aspectlist>  ENDSIGNAL EOL
+            => layout.AddSignal(<>),
+};
+
+aspectlist: AspectList = {
+    () => AspectList::new(),
+    <b:aspectlist> ASPECT <a:STRING> <s:STRING> EOL
+        => AspectList::AddAspect(b,a,s), 
+};
+
+sensor: () = {
+    //        index    layer      scale       visible     X       Y    
+    SENSOR <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT> <FLOAT>
+    //         name   script
+            <STRING> <STRING> EOL => layout.AddSensor(<>),
+};
+
+control: () = {
+    // CONTROL index    layer       scale       visible start-x  start-y 
+    CONTROL <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT> <FLOAT>
+    //  name    on-script off-script
+       <STRING> <STRING>  <STRING> EOL =>  layout.AddControl(<>),
+};
+
 
 STRING: String = {
-    <l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),
+<l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),
 };
 
 UINTEGER: u32 = {
