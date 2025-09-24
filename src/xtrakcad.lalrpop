@@ -26,7 +26,7 @@ definition: () = {
     bezier,
     bzrlin,
     straight,
-//    turnout,
+    turnout,
 //    turntable,
 //    car,
 //    joint,
@@ -301,8 +301,33 @@ turnoutbody: TurnoutBody = {
     () => TurnoutBody::new(),
     <e:turnoutbodyelt> <b:turnoutbody> 
         => TurnoutBody::AppendTurnoutBodyElement(e,b),
-    <e:structbodyelt> <b:turnoutbody>
+    <e:structbodyeltSubset> <b:turnoutbody>
         => TurnoutBody::AppendStructureBodyElement(e,b),
+};
+
+structbodyeltSubset: StructureBodyElement = {
+         L <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> EOL => StructureBodyElement::L(<>),
+         M <UINTEGER> <UINTEGER>  <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <FLOAT> <UINTEGER> <UINTEGER> EOL 
+                => StructureBodyElement::M(<>),
+         F <UINTEGER> <UINTEGER> <FLOAT> <UINTEGER> <UINTEGERorNULL> EOL 
+            <fblock> => StructureBodyElement::F(<>),
+         A <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            <FLOAT> <FLOAT>  EOL => StructureBodyElement::A(<>),
+         B <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+            <FLOAT> <UINTEGER> <UINTEGER> EOL => StructureBodyElement::B(<>),
+         Q <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+            <FLOAT> <UINTEGER> EOL => StructureBodyElement::Q(<>),
+         G <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> 
+            EOL => StructureBodyElement::G(<>),
+         Y <UINTEGER> <UINTEGER> <FLOAT> <UINTEGER> <UINTEGER> EOL <fblock>
+            => StructureBodyElement::Y(<>),
+         Z <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> <STRING> EOL
+            => StructureBodyElement::Z(<>),
+         H <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <FLOAT> <FLOAT> 
+            <FLOAT> <FLOAT> <FLOAT> EOL SUBSEGS EOL <bzlsegments> SUBSEND EOL
+            => StructureBodyElement::H(<>),
 };
 
 turnoutbodyelt: TurnoutBodyElement = {

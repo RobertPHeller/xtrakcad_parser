@@ -532,6 +532,7 @@ impl<'input> Iterator for Lexer<'input> {
                             },
                         };
                     } else if ch == '"' {
+                        //eprintln!("*** Lexer::next(): in string, ch = '{}'",ch);
                         match self.PeekChar() {
                             Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
                             Ok(nextChar) => {
@@ -542,11 +543,23 @@ impl<'input> Iterator for Lexer<'input> {
                                 }
                             },
                         };
+                        //eprintln!("*** Lexer::next(): in string, peekch = '{}'",peekch);
                         if peekch == '"' {
                             ch = peekch;
                             self.peekChar = None;
                             self.current_column += 1;
                             word.push(ch);
+                            self.current_column += 1;
+                            match self.ReadChar() {
+                                Err(message) => {return Some(Err(LexicalError::IOError(message.to_string())));},
+                                Ok(nextChar) => {
+                                    if nextChar.is_none() { 
+                                        ch = '\n';
+                                    } else {
+                                        ch = nextChar.unwrap();
+                                    }
+                                },
+                            };
                         } else {
                             endOfString = true;
                         }
