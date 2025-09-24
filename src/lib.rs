@@ -715,10 +715,73 @@ impl Layout {
                     index,layer,twidth,color,pad1,scale,vis,X1,Y1,X2,Y2,X3,Y3,X4,Y4,pad2,desc_X,desc_Y,body);
     }
     //STRAIGHT (sp) index (sp) layer (sp) line-width (sp) 0 (sp) 0 (sp) scale (sp) descshow&visibility&no_ties&bridge&roadbed (sp) Desc-x (sp) Desc-y
-    pub fn AddStraught(&mut self,index: u32, layer: u32, line_width: u32, pad1: u32, pad2: u32, scale: Scale, flags: u32 ,Desc_x: f64, Desc_y: f64, body: TrackBody) {
+    pub fn AddStraught(&mut self,index: u32, layer: u32, line_width: u32, 
+                       pad1: u32, pad2: u32, scale: Scale, flags: u32, 
+                       Desc_x: f64, Desc_y: f64, body: TrackBody) {
+        eprintln!("*** Layout::AddStraught({},{},{},{},{},{:?},{},{},{},{:?})",
+                index, layer, line_width, pad1, pad2, scale, flags, Desc_x, 
+                Desc_y, body);
     }
     //TURNOUT (sp) index (sp) layer (sp) options (sp) postion (sp) 0 (sp) scale (sp)visible&no_ties&bridge&roadbed (sp)origx (sp) origy (sp) elev (sp) angle (sp) "Manufacturer<tab>Description <tab>Part<tab>"</tab></tab></tab>
-    pub fn AddTurnout(&mut self,index: u32, layer: u32, options: u32, postion: u32, pad1: u32, scale: Scale, flags: u32, origx: f64, origy: f64, elev: u32, angle: f64, tablist: String, adjopt: Option<(f64, f64)>, pieropt: Option<(f64, String)>, body: TurnoutBody) {
+    pub fn AddTurnout(&mut self,index: u32, layer: u32, options: u32, 
+                      postion: u32, pad1: u32, scale: Scale, flags: u32, 
+                      origx: f64, origy: f64, elev: u32, angle: f64, 
+                      tablist: String, adjopt: Option<(f64, f64)>, 
+                      pieropt: Option<(f64, String)>, body: TurnoutBody) {
+        eprintln!("*** Layout::AddTurnout({},{},{},{},{},{:?},{},{},{},{},{},{},{:?},{:?},{:?})",
+                      index, layer, options, postion, pad1, scale, flags,
+                      origx, origy, elev, angle, tablist, adjopt, pieropt, 
+                      body );
+    }
+    //TURNTABLE (sp) index (sp) layer (sp) 0 (sp) 0 (sp) 0 (sp) scale (sp) 
+    //               visible (sp) x (sp) y (sp) 0 (sp) radius (sp) current-ep
+    pub fn AddTurntable(&mut self,index: u32, layer:u32, pad1: u32, pad2: u32,
+                        pad3: u32, scale: Scale, visible: u32, x: f64,
+                        y: f64, pad4: u32, radius: f64, 
+                        current_ep: Option<u32>, body: TrackBody) {
+        eprintln!("*** Layout::AddTurntable({},{},{},{},{},{:?},{},{},{},{},{},{:?},{:?})",
+                    index,layer,pad1,pad2,pad3,scale,visible,x,y,pad4,radius,
+                    current_ep,body);
+    }
+    //             
+    // JOINT (sp )index (sp) layer (sp) width (sp) 0 (sp) 0 (sp) scale (sp) 
+    //       visible&no_ties&bridge&roadbed (sp) l0 (sp) l1 (sp) R (sp) flip 
+    //       (sp) negate (sp) S-curve (sp) x (sp) y (sp) 0 (sp) angle (sp) 
+    //       desc-x (sp) desc-y
+    pub fn AddJoint(&mut self,index: u32, layer: u32, width: u32, 
+                    pad1: u32, pad2: u32, scale: Scale, flags: u32, 
+                    l0: f64, l1: f64, R: f64, flip: u32, negate: u32, 
+                    S_curve: u32, x: f64, y: f64, pad3: u32, angle: f64, 
+                    desc_x: f64, desc_y: f64, body: TrackBody) {
+        eprintln!("*** Layout::AddJoint({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{:?})",
+                    index,layer,width,pad1,pad2,scale,flags,S_curve,x,y,pad3,
+                    angle,desc_x,desc_y,body);
+    }
+    // CAR (sp) inx (sp) scale (sp) "Title" (sp) options (sp) type (sp) length (sp) width (sp) 0 (sp) truck-center-offset*1000 (sp)truck-center (sp) coupled-length (sp) color (sp) puchaseprice (sp) currentprice (sp) condition (sp) purchdate (sp) servdate (sp) "notes"
+    pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
+                  options: u32, typeofcar: u32, length: f64, width: f64, 
+                  pad1: u32,truck_center_offset: u32, truck_center: f64, 
+                  coupled_length: f64, color: u32, puchaseprice: f64,
+                  currentprice: f64, condition: u32, purchdate: u32,
+                  servdate: u32, notes: String, onlayout: Option<CarAux>) {
+        eprintln!("*** Layout::AddCar({},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
+                    inx,scale,title,options,typeofcar,length,width,pad1,
+                    truck_center_offset,truck_center,coupled_length,color,
+                    puchaseprice,currentprice,condition,purchdate,servdate,
+                    notes,onlayout);
+    }
+    pub fn AddNote(&mut self,index: u32, layer: u32, pad1: u32, pad2: u32,
+                   start_x: f64, start_y: f64, length: u32, typeofnote: u32,
+                   text1: String,  text2: String) {
+        eprintln!("*** Layout::AddNote({},{},{},{},{},{},{},{},{},{})",
+                  index,layer,pad1,pad2,start_x,start_y,length,typeofnote,
+                  text1,text2);
+    }
+    pub fn AddText(&mut self,index: u32, layer: u32, color: u32, 
+                   font_size: u32, pad1: u32, x: f64, y: f64, check_box: u32,
+                   text: String, rotation: u32) {
+        eprintln!("*** Layout::AddText({},{},{},{},{},{},{},{},{},{})",
+                  index,layer,color,font_size,pad1,x,y,check_box,text,rotation);
     }
 }
 
@@ -748,7 +811,8 @@ impl BZSegments {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BZLSegments {
-    elements: Vec<StructureBodyElement>,}
+    elements: Vec<StructureBodyElement>,
+}
 
 impl BZLSegments {
     pub fn new() -> Self {
@@ -769,11 +833,11 @@ pub struct FBlock {
 
 impl FBlock {
     pub fn new() -> Self {
-        eprintln!("*** FBlock::new()");
+        //eprintln!("*** FBlock::new()");
         Self{ elememts: Vec::new()}
     }
     pub fn Append(e: FBlockElement, mut b: FBlock) -> Self {
-        eprintln!("*** FBlock::Append({:?},{:?})",e,b);
+        //eprintln!("*** FBlock::Append({:?},{:?})",e,b);
         b.elememts.insert(0,e);
         b
     }
@@ -803,11 +867,11 @@ pub struct StructureBody {
 
 impl StructureBody {
     pub fn new() -> Self {
-        eprintln!("*** StructureBody::new()");
+        //eprintln!("*** StructureBody::new()");
         Self {elememts: Vec::new()}
     }
     pub fn Append(e: StructureBodyElement, mut b: StructureBody) -> Self {
-        eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
+        //eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
         b.elememts.insert(0,e);
         b
     }
@@ -996,3 +1060,5 @@ impl TurnoutBodyElement {
         }
     }
 }
+#[derive(Debug)]
+pub struct CarAux(u32,u32,f64,f64,f64,TrackBody);

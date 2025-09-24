@@ -27,11 +27,11 @@ definition: () = {
     bzrlin,
     straight,
     turnout,
-//    turntable,
-//    car,
-//    joint,
-//    note,
-//    text,
+    turntable,
+    car,
+    joint,
+    note,
+    text,
 //    block,
 //    switchmotor,
 //    signal,
@@ -353,6 +353,63 @@ intlist: IntegerList = {
     () => IntegerList::new(),
     <b:intlist> <e:UINTEGER> => IntegerList::Append(e,b),
 };
+
+turntable: () = {
+     TURNTABLE <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> 
+                <scalename> <UINTEGER> <FLOAT> <FLOAT> <UINTEGER> <FLOAT> 
+                <integerornull> EOL <trackbody> ENDSEGS EOL
+                    => layout.AddTurntable(<>),
+};
+
+integerornull: Option<u32> = {
+    () => None,
+    <UINTEGER> => Some(<>),
+};
+
+joint: () = {
+    //      index     layer      width      0          0          scale
+    JOINT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename>
+    //      flags     l0       l1     R       flip     negate    S-curve 
+          <UINTEGER> <FLOAT> <FLOAT> <FLOAT> <UINTEGER> <UINTEGER> <UINTEGER>
+    //       x       y       0         angle   desc-x  desc-y  
+          <FLOAT> <FLOAT>  <UINTEGER> <FLOAT> <FLOAT>  <FLOAT> EOL
+          <trackbody> ENDSEGS EOL =>
+            layout.AddJoint(<>),
+};
+
+car: () = {
+    //    inx        scale     "Title"   options     type      length  width
+    CAR <UINTEGER> <scalename> <STRING> <UINTEGER> <UINTEGER> <FLOAT> <FLOAT>
+    //      0    truck-center-offset*1000 truck-center  coupled-length
+        <UINTEGER> <UINTEGER>               <FLOAT>         <FLOAT> 
+    //     color puchaseprice  currentprice  condition   purchdate 
+        <UINTEGER> <FLOAT>        <FLOAT>    <UINTEGER> <UINTEGER> 
+    //   servdate  "notes"
+        <UINTEGER>  <STRING> <caronlayout> => layout.AddCar(<>),
+};
+
+caronlayout: Option<CarAux> = {
+    EOL => None,
+    // carIndex  layer     pos.x   pos.y   angle 
+    <UINTEGER> <UINTEGER> <FLOAT> <FLOAT> <FLOAT> EOL <trackbody> ENDSEGS EOL 
+        => Some(CarAux(<>)),
+};
+
+note: () = {
+    //     index      layer       0           0      start-x start-y
+    NOTE <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> <FLOAT>
+    //      length     type     "text1"  "text2" 
+         <UINTEGER> <UINTEGER> <STRING> <STRING> EOL =>
+         layout.AddNote(<>),
+};
+
+
+text: () = {
+    TEXT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> 
+         <FLOAT> <UINTEGER> <STRING> <UINTEGER> EOL =>
+        layout.AddText(<>),
+};
+
 
 STRING: String = {
     <l:r#""(\\\\|\\"|[^"\\])*""#> => l.StringValue(),
