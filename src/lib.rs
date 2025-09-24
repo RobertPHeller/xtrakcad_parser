@@ -760,20 +760,23 @@ impl Layout {
     // CAR (sp) inx (sp) scale (sp) "Title" (sp) options (sp) type (sp) length (sp) width (sp) 0 (sp) truck-center-offset*1000 (sp)truck-center (sp) coupled-length (sp) color (sp) puchaseprice (sp) currentprice (sp) condition (sp) purchdate (sp) servdate (sp) "notes"
     pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
                   options: u32, typeofcar: u32, length: f64, width: f64, 
-                  pad1: u32,truck_center_offset: u32, truck_center: f64, 
+                  pad0: u32,truck_center_offset: u32, truck_center: f64, 
                   coupled_length: f64, color: u32, puchaseprice: f64,
                   currentprice: f64, condition: u32, purchdate: u32,
-                  servdate: u32, notes: String, onlayout: Option<CarAux>) {
-        eprintln!("*** Layout::AddCar({},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
-                    inx,scale,title,options,typeofcar,length,width,pad1,
+                  servdate: u32, pad1: u32,pad2: u32,pad3: u32,pad4: u32,
+                  pad5: u32, pad6: u32, notes: String, 
+                  onlayout: Option<CarAux>) {
+        eprintln!("*** Layout::AddCar({},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
+                    inx,scale,title,options,typeofcar,length,width,pad0,
                     truck_center_offset,truck_center,coupled_length,color,
                     puchaseprice,currentprice,condition,purchdate,servdate,
+                    pad1,pad2,pad3,pad4,pad5,pad6,
                     notes,onlayout);
     }
     pub fn AddNote(&mut self,index: u32, layer: u32, pad1: u32, pad2: u32,
                    start_x: f64, start_y: f64, length: u32, typeofnote: u32,
-                   text1: String,  text2: String) {
-        eprintln!("*** Layout::AddNote({},{},{},{},{},{},{},{},{},{})",
+                   text1: String,  text2: Option<String>) {
+        eprintln!("*** Layout::AddNote({},{},{},{},{},{},{},{},{},{:?})",
                   index,layer,pad1,pad2,start_x,start_y,length,typeofnote,
                   text1,text2);
     }

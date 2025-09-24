@@ -34,9 +34,9 @@ definition: () = {
     text,
     block,
     switchmotor,
-//    signal,
-//    sensor,
-//    control,
+    signal,
+    sensor,
+    control,
     EOL,
 };    
 
@@ -384,8 +384,10 @@ car: () = {
         <UINTEGER> <UINTEGER>               <FLOAT>         <FLOAT> 
     //     color puchaseprice  currentprice  condition   purchdate 
         <UINTEGER> <FLOAT>        <FLOAT>    <UINTEGER> <UINTEGER> 
-    //   servdate  "notes"
-        <UINTEGER>  <STRING> <caronlayout> => layout.AddCar(<>),
+    //   servdate   pad1      pad2        pad3        pad4       pad5
+        <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> 
+    //     pad6     "notes"
+        <UINTEGER> <STRING> <caronlayout> => layout.AddCar(<>),
 };
 
 caronlayout: Option<CarAux> = {
@@ -399,10 +401,14 @@ note: () = {
     //     index      layer       0           0      start-x start-y
     NOTE <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> <FLOAT>
     //      length     type     "text1"  "text2" 
-         <UINTEGER> <UINTEGER> <STRING> <STRING> EOL =>
+         <UINTEGER> <UINTEGER> <STRING> <optstring> EOL =>
          layout.AddNote(<>),
 };
 
+optstring: Option<String> = {
+    () => None,
+    <STRING> => Some(<>),
+};
 
 text: () = {
     TEXT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <FLOAT> 
