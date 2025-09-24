@@ -703,12 +703,29 @@ impl Layout {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum BZSegment {
     S1(u32,f64,f64,f64,f64,f64),
     S2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
     C1(u32,f64,f64,f64,f64,f64,f64),
     C2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
 }
+
+#[derive(Debug, PartialEq, Clone)] 
+pub struct BZSegments {
+    elements: Vec<BZSegment>,
+}
+
+impl BZSegments {
+    pub fn new() -> Self {
+        Self {elements: Vec::new()}
+    }
+    pub fn AppendBZSeg(e: BZSegment, mut b: BZSegments) -> Self {
+        b.elements.insert(0,e);
+        b
+    }
+}
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BZLSegments {
@@ -794,24 +811,28 @@ impl BZRLineBody {
 
 #[derive(Debug)]
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
-                            CornuBody);
+                            BZSegments);
+
+
+
+
 
 #[derive(Debug)]
 pub struct CornuBody {
-    
+    trackends: Vec<TrackBodyElement>,
+    trackelements: Vec<CornuBodyElement>,
 }
 
 impl CornuBody {
     pub fn new() -> Self {
-        Self{}
+        Self{ trackends: Vec::new(), trackelements: Vec::new(),}
     }
-    pub fn AppendTrack(e: TrackBodyElement, b: CornuBody) -> Self {
+    pub fn AppendTrack(e: TrackBodyElement, mut b: CornuBody) -> Self {
+        b.trackends.insert(0,e);
         b
     }
-    pub fn AppendCornu(e: CornuBodyElement, b: CornuBody) -> Self {
-        b
-    }
-    pub fn AppendBZSeg(e: BZSegment, b: CornuBody) -> Self {
+    pub fn AppendCornu(e: CornuBodyElement, mut b: CornuBody) -> Self {
+        b.trackelements.insert(0,e);
         b
     }
 }

@@ -199,9 +199,9 @@ cornubodyelt: CornuBodyElement = {
            SUBSEND EOL => CornuBodyElement(<>),
 };
 
-bzsegments:  CornuBody = {
-    () => CornuBody::new(),
-    <e:bzsegment> <b:bzsegments> => CornuBody::AppendBZSeg(e,b),
+bzsegments:  BZSegments = {
+    () => BZSegments::new(),
+    <e:bzsegment> <b:bzsegments> => BZSegments::AppendBZSeg(e,b),
 };
            
 bzsegment: BZSegment = {
