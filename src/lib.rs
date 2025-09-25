@@ -1,34 +1,66 @@
+// -!- rust -!- //////////////////////////////////////////////////////////////
+//
+//  System        : 
+//  Module        : 
+//  Object Name   : $RCSfile$
+//  Revision      : $Revision$
+//  Date          : $Date$
+//  Author        : $Author$
+//  Created By    : Robert Heller
+//  Created       : 2025-09-24 14:45:20
+//  Last Modified : <250924.2005>
+//
+//  Description	
+//
+//  Notes
+//
+//  History
+//	
+/////////////////////////////////////////////////////////////////////////////
+//    Copyright (C) 2025  Robert Heller D/B/A Deepwoods Software
+//			51 Locke Hill Road
+//			Wendell, MA 01379-9728
+//
+//    This program is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program; if not, write to the Free Software
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+// 
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//! XtrkCAD layout file parser in Rust, using a lalrpop parser.
+//! Ported from the Bison++/C++ parser that is part of the Model Railroad 
+//! System
+
+
+
 use lalrpop_util::lalrpop_mod;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 use std::str::FromStr;
+use std::fmt;
+use std::collections::HashMap;
+
 
 // Pull in the parser module
 lalrpop_mod!(pub xtrakcad); // synthesized by LALRPOP
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum Scale {
-    HO,
-    N,
-    O,
-    G,
-}
-#[derive(Debug)]
-pub struct Layout {
-}
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum LayoutError {
-    ParseError(String),
-    FileError(String),
-    IOError(String),
-}
-
-use std::fmt;
-
+/// Lexer result type
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
+/// Lexer tokens
 #[derive(Clone, Debug)]
 pub enum Tok {
     EOL,
@@ -98,7 +130,13 @@ pub enum Tok {
     Z,
 }
 
+
 impl fmt::Display for Tok {
+    /// Display a Tok enum
+    /// ## Parameters:
+    /// - f formatter to write to
+    ///
+    /// __Returns__ a fmt::Result
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Tok::EOL => write!(f,"\\n" ),
@@ -171,6 +209,11 @@ impl fmt::Display for Tok {
 }
 
 impl Tok {
+    /// Extract a String value from a token
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the String value
     pub fn StringValue(self) -> String {
         match self {
             Tok::STRING(s) |
@@ -178,12 +221,22 @@ impl Tok {
             _        => String::new(),
         }
     }
+    /// Extract a u32 value from a token
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the u32 value
     pub fn U32Value(self) -> u32 {
         match self {
             Tok::UINTEGER(u) => u,
             _           => 0,
         }
     }
+    /// Extract a f64 value from a token
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the f64 value
     pub fn F64Value(self) -> f64 {
         match self {
             Tok::FLOAT(f) => f,
@@ -192,6 +245,7 @@ impl Tok {
     }
 }
 
+/// Lexer errors
 #[derive(Debug, PartialEq, Clone)] 
 pub enum LexicalError {
     UnTerminatedString,
@@ -201,6 +255,11 @@ pub enum LexicalError {
 }
 
 impl fmt::Display for LexicalError {
+    /// Display a LexicalError enum
+    /// ## Parameters:
+    /// - f formatter to write to
+    ///
+    /// __Returns__ a fmt::Result
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LexicalError::UnTerminatedString => write!(f, "Lexical Error: unterminated string"),
@@ -213,14 +272,7 @@ impl fmt::Display for LexicalError {
     }
 }
 
-//impl fmt::Display for ParseError<usize, Tok, LexicalError> {
-//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//    }
-//}    
-
-//use std::str::Chars;
-//use std::iter::Peekable;
-
+/// Manage special case of parsing Title lines.
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ScanEOL {
     Off,
@@ -228,7 +280,9 @@ pub enum ScanEOL {
     On,
 }
 
-
+/// Lexer structure 
+/// Reads characters from the layout file and returns Tokens to the Parser.
+/// Handles all of the low-level character level processing
 pub struct Lexer<'input> {
     reader: &'input mut BufReader<File>,
     lineno: u32,
@@ -240,11 +294,26 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    /// Create a new initialized instance of the lexer.
+    /// The Lexer struct maintains layout file context throughout the
+    /// parsing process, including keep track of the line and column.
+    /// It also maintains a one character look ahead.
+    /// ## Parameters:
+    /// - reader a BufReader instance for the layout file
+    ///
+    /// __Returns__ a lexer instance that can be passed to the parser.
     pub fn new(reader: &'input mut BufReader<File>) -> Self {
         Lexer { reader: reader, lineno: 1, first_column: 0, 
                 current_column: 0, peekChar: None, scaneol: ScanEOL::Off, 
                 floatenable: true }
     }
+    /// Low level character look ahead.  If the peek buffer is empty, this
+    /// method reads one character from the file and saves it in the peek 
+    /// buffer.
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the peek buffer.
     fn PeekChar(&mut self) -> io::Result<Option<char>> {
         if self.peekChar.is_none() {
             let mut buffer: [u8; 1] = [0; 1];
@@ -255,6 +324,11 @@ impl<'input> Lexer<'input> {
         }
         Ok(self.peekChar)
     }
+    /// Low level character reader.  This function empties the peek buffer,
+    /// returning the next available character.
+    /// ## Parameters: 
+    /// None 
+    /// __Returns__ the next available character or None on EOF
     fn ReadChar(&mut self) -> io::Result<Option<char>> {
         if self.peekChar.is_none() {self.PeekChar()?;}
         let result = self.peekChar;
@@ -262,19 +336,32 @@ impl<'input> Lexer<'input> {
         Ok(result)
     }
 }
+/// File location structure.  The file's location is a column on a line
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct FileLocation {
     lineno: u32,
     column: usize,
 }
 
+
 impl FileLocation {
+    /// Initializer for a file location
+    /// ## Parameters:
+    /// - l the line number
+    /// - c the column
+    ///
+    /// __Returns__ an initialized FileLocation
     pub fn new(l: u32, c: usize) -> Self {
         Self {lineno: l, column: c }
     }
 }
 
 impl fmt::Display for FileLocation {
+    /// Display function for a file location.
+    /// ## Parameters:
+    /// - f a fmt::Formatter object.
+    ///
+    /// __Returns__ a fmt::Result
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Line:{}/Col:{}", self.lineno,self.column)
     }
@@ -285,7 +372,13 @@ impl fmt::Display for FileLocation {
 include!(concat!(env!("OUT_DIR"), "/keywords.rs"));
 
 impl<'input> Iterator for Lexer<'input> {
+    /// Iterator resuly type
     type Item = Spanned<Tok, FileLocation, LexicalError>;
+    /// Iterator for Lexer: return the next Token
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ The next available token, a lexical error or None on EOF.
     fn next(&mut self) -> Option<Self::Item> {
         fn IsDigit(ch: char) -> bool {
             match ch {
@@ -599,18 +692,17 @@ impl<'input> Iterator for Lexer<'input> {
 }
 
 
-
-
-
-
-
-
-
-
-
+/// Layout error codes
+#[derive(Debug, PartialEq, Clone)]
+pub enum LayoutError {
+    ParseError(String),
+    FileError(String),
+    IOError(String),
+}
 
 
 impl fmt::Display for LayoutError {
+    /// Display function of layout error codes.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LayoutError::ParseError(message) => write!(f, "Parse Error: {}", message),
@@ -620,10 +712,136 @@ impl fmt::Display for LayoutError {
     }
 }
 
+/// Layer struct
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Layer {
+    visible: bool,
+    frozen: bool,
+    on_map: bool,
+    color_rgb: u32,
+    module: u32,
+    dont_use_color: bool,
+    color_flags: u32,
+    button_off: bool,
+    name: String,
+    inherit: bool,
+    scale_index: u32,
+    min_track_radius: f64,
+    max_track_grade: f64,
+    tie_length: f64,
+    tie_width: f64,
+    tie_spacing: f64,
+}
+
+impl Layer {
+    /// Initialize a layer
+    /// ## Parameters:
+    /// - visible is it visible?
+    /// - frozen is it frozen?
+    /// - on_map is it on map?
+    /// - color_rgb its colot
+    /// - module its module
+    /// - dont_use_color don't use color?
+    /// - color_flags color flags
+    /// - button_off is it button off?
+    /// - name its name
+    /// - inherit inherit?
+    /// - scale_index its scale index
+    /// - min_track_radius minimum track radious
+    /// - max_track_grade maximum grade
+    /// - tie_length tie length
+    /// - tie_width tie width
+    /// - tie_spacing tie spacing
+    ///
+    /// __Returns__ an initialized Layer struct.
+    pub fn new(visible: bool,frozen: bool,on_map: bool,color_rgb: u32,
+               module: u32,dont_use_color: bool,color_flags: u32,
+               button_off: bool,name: String,inherit: bool,scale_index: u32,
+               min_track_radius: f64,max_track_grade: f64,tie_length: f64,
+               tie_width: f64,tie_spacing: f64) -> Self {
+        Self {visible: visible,frozen: frozen,on_map: on_map,color_rgb: 
+              color_rgb,module: module,dont_use_color: dont_use_color,
+              color_flags: color_flags,button_off: button_off,name: name,
+              inherit: inherit,scale_index: scale_index,
+              min_track_radius: min_track_radius,
+              max_track_grade: max_track_grade,tie_length: tie_length,
+              tie_width: tie_width,tie_spacing: tie_spacing}
+    }
+}
+
+/// Structure struct
+#[derive(Debug, Clone, PartialEq)] 
+pub struct Structure {
+    layer: u32,
+    lineType: u32,
+    scale: Scale,
+    visible: bool,
+    origx: f64,
+    origy: f64,
+    elev: u32,
+    angle: f64,
+    textfields: String,
+    adjopt: Option<(f64, f64)>,
+    pieropt: Option<(f64, String)>,
+    structbody: StructureBody,
+}
+
+impl Structure {
+    /// Initialize a Structure element
+    /// ## Parameters:
+    /// - layer
+    /// - lineType
+    /// - scale
+    /// - visible
+    /// - origx
+    /// - origy
+    /// - elev
+    /// - angle
+    /// - textfields
+    /// - adjopt
+    /// - pieropt
+    /// - structbody
+    pub fn new(layer: u32, lineType: u32, scale: Scale, visible: bool, 
+               origx: f64, origy: f64, elev: u32, angle: f64, 
+               textfields: String, adjopt: Option<(f64, f64)>, 
+               pieropt: Option<(f64, String)>, structbody: StructureBody) 
+                -> Self {
+        Self { layer: layer, lineType: lineType, scale: scale, 
+               visible: visible, origx: origx, origy: origy, elev: elev, 
+               angle: angle, textfields: textfields, adjopt: adjopt, 
+               pieropt: pieropt, structbody: structbody }
+    }
+}
+
+/// Layout structure.  Contains a parsed layout file.
+#[derive(Debug)]
+pub struct Layout {
+    file_version: u32,
+    program_version: (u32,u32,u32),
+    title1: String,
+    title2: String,
+    mapscale: u32,
+    roomsize: (f64,f64),
+    scale: Scale,
+    layers: HashMap<u32,Layer>,
+    current_layer: u32,
+    structures: HashMap<u32,Structure>,
+}
+
 
 impl Layout {
+    /// Layout initializer.
+    /// Initializes a layout structure by reading and parsing a layout file.
+    /// ## Parameters:
+    /// - layoutfilename The name of the layout file to process.
+    ///
+    /// __Returns__ A freshly parsed layout or an error.
     pub fn new(layoutfilename: String) -> Result<Self, LayoutError> {
-        let mut this = Self{};
+        let mut this = Self{file_version: 0, program_version: (0,0,0),
+                            title1: String::new(), title2: String::new(),
+                            mapscale: 1, roomsize: (1.0,1.0),
+                            scale: Scale::HO, layers: HashMap::new(),
+                            current_layer: 0, structures: HashMap::new()};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -641,39 +859,129 @@ impl Layout {
         };
         Ok(this)
     }
-    pub fn SetVersion(&mut self,fver: u32, major: u32, minor: u32, release: u32) {
-        eprintln!("*** Layout::SetVersion({},{},{},{})",fver,major,minor,release);
+    /// Set the version information
+    /// ## Parameters:
+    /// - fver File version
+    /// - major major number
+    /// - minor minor version number
+    /// - release release number
+    ///
+    /// __Returns__ nothing
+    pub fn SetVersion(&mut self,fver: u32, major: u32, minor: u32, 
+                      release: u32) {
+        self.file_version = fver;
+        self.program_version = (major, minor, release);
     }
+    /// Set the layout titles
+    /// ## Parameters:
+    /// - level title level -- should only b 1 or 2
+    /// - text the title text
+    ///
+    /// __Returns__ nothing
     pub fn SetTitle(&mut self,level: u32, text: String) {
-        eprintln!("*** Layout::SetTitle({},'{}')",level,text);
+        match level {
+            1 => {self.title1 = text.trim().to_string();},
+            2 => {self.title2 = text.trim().to_string();},
+            _ => (),
+        };
     }
+    /// Set the layout map scale
+    /// ## Parameters:
+    /// - mapscale the layout map scale
+    ///
+    /// __Returns__ nothing
     pub fn SetMapscale(&mut self,mapscale: u32) {
-        eprintln!("*** Layout::SetMapscale({})",mapscale);
+        self.mapscale = mapscale;
     }
+    /// Set the room size in inches
+    /// ## Parameters:
+    /// - width room width
+    /// - height room height
+    ///
+    /// __Returns__ nothing
     pub fn SetRoomsize(&mut self,width: f64, height: f64) {
-        eprintln!("*** Layout::SetRoomsize({},{})",width,height);
+        self.roomsize = (width,height);
     }
+    /// Set the layout modeling scale.
+    /// ## Parameters:
+    /// - scale the scale
+    ///
+    /// __Returns__ nothing
     pub fn SetScale(&mut self,scale: Scale) {
-        eprintln!("*** Layout::SetScale({:?})",scale);
+        self.scale = scale;
     }
+    /// Add a layer to the layout
+    /// ## Parameters: 
+    /// - lnum layer number
+    /// - visible is it visible?
+    /// - frozen is it frozen?
+    /// - on_map is it on map?
+    /// - color_rgb its colot
+    /// - module its module
+    /// - dont_use_color don't use color?
+    /// - color_flags color flags
+    /// - button_off is it button off?
+    /// - name its name
+    /// - inherit inherit?
+    /// - scale_index its scale index
+    /// - min_track_radius minimum track radious
+    /// - max_track_grade maximum grade
+    /// - tie_length tie length
+    /// - tie_width tie width
+    /// - tie_spacing tie spacing
+    ///
+    /// __Returns__ nothing
     pub fn AddLayer(&mut self,lnum: u32,visible: u32,frozen: u32,on_map: u32,
                     color_rgb: u32,module: u32,dont_use_color: u32,
                     color_flags: u32,button_off: u32,name: String,inherit: u32,
                     scale_index: u32,min_track_radius: f64,
                     max_track_grade: f64,tie_length: f64,tie_width: f64,
                     tie_spacing:f64) {
-        eprintln!("*** Layout::AddLayer({},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{})",lnum,visible,frozen,on_map,color_rgb,module,dont_use_color,color_flags,button_off,name,inherit,scale_index,min_track_radius,max_track_grade,tie_length,tie_width,tie_spacing);
+        self.layers.insert(lnum,Layer::new(visible != 0,frozen != 0, 
+                                           on_map != 0, color_rgb,module,
+                                           dont_use_color != 0, color_flags,
+                                           button_off != 0,name,inherit!= 0,
+                                           scale_index,min_track_radius,
+                                           max_track_grade,tie_length,
+                                           tie_width,tie_spacing));
     }
+    /// Set the current layer
+    /// ## Parameters:
+    /// - lnum The current layer
+    ///
+    /// __Returns__ nothing
     pub fn SetCurrentLayer(&mut self,lnum: u32) {
-        eprintln!("*** Layout::SetCurrentLayer({})",lnum);
+        self.current_layer = lnum;
     }
+    /// Add a structure
+    /// - index unique index
+    /// - layer the layer the structure is on
+    /// - lineType the line type
+    /// - pad1 unused
+    /// - pad2 unused
+    /// - scale the scale
+    /// - visible is it visible
+    /// - origx orig x
+    /// - origy orig y
+    /// - elev elevation
+    /// - angle the angle
+    /// - textfields text fields
+    /// - adjopt optional adjustable ends
+    /// - pieropt optional piers
+    /// - structbody the structure body segments
+    ///
+    /// __Returns__ nothing
     pub fn AddStructure(&mut self,index: u32, layer: u32, lineType: u32, 
                         pad1: u32, pad2: u32, scale: Scale, visible: u32, 
                         origx: f64, origy: f64, elev: u32, angle: f64, 
                         textfields: String, adjopt: Option<(f64, f64)>, 
                         pieropt: Option<(f64, String)>, 
                         structbody: StructureBody) {
-        eprintln!("*** Layout::AddStructure({},{},{},{},{},{:?},{},{},{},{},{},{},{:?},{:?},{:?})",index,layer,lineType,pad1,pad2,scale,visible,origx,origy,elev,angle,textfields,adjopt,pieropt,structbody);
+        self.structures.insert(index, Structure::new(layer,lineType,scale,
+                                                      visible!=0,origx,origy,
+                                                      elev,angle,textfields,
+                                                      adjopt,pieropt,
+                                                      structbody));
     }
     pub fn AddDrawing(&mut self,index: u32, layer: u32, lineType: u32,
                         pad1: u32, pad2: u32, start_x: f64, start_y: f64,
@@ -715,10 +1023,10 @@ impl Layout {
                     index,layer,twidth,color,pad1,scale,vis,X1,Y1,X2,Y2,X3,Y3,X4,Y4,pad2,desc_X,desc_Y,body);
     }
     //STRAIGHT (sp) index (sp) layer (sp) line-width (sp) 0 (sp) 0 (sp) scale (sp) descshow&visibility&no_ties&bridge&roadbed (sp) Desc-x (sp) Desc-y
-    pub fn AddStraught(&mut self,index: u32, layer: u32, line_width: u32, 
+    pub fn AddStraight(&mut self,index: u32, layer: u32, line_width: u32, 
                        pad1: u32, pad2: u32, scale: Scale, flags: u32, 
                        Desc_x: f64, Desc_y: f64, body: TrackBody) {
-        eprintln!("*** Layout::AddStraught({},{},{},{},{},{:?},{},{},{},{:?})",
+        eprintln!("*** Layout::AddStraight({},{},{},{},{},{:?},{},{},{},{:?})",
                 index, layer, line_width, pad1, pad2, scale, flags, Desc_x, 
                 Desc_y, body);
     }
@@ -814,6 +1122,14 @@ impl Layout {
     }
 }
 
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum Scale {
+    HO,
+    N,
+    O,
+    G,
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum BZSegment {
     S1(u32,f64,f64,f64,f64,f64),
@@ -889,7 +1205,7 @@ pub enum StructureBodyElement {
     H(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,BZLSegments),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct StructureBody {
     elememts: Vec<StructureBodyElement>,
 }

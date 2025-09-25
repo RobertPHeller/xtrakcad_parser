@@ -1,17 +1,64 @@
+// -!- rust -!- //////////////////////////////////////////////////////////////
+//
+//  System        : 
+//  Module        : 
+//  Object Name   : $RCSfile$
+//  Revision      : $Revision$
+//  Date          : $Date$
+//  Author        : $Author$
+//  Created By    : Robert Heller
+//  Created       : 2025-09-24 15:04:51
+//  Last Modified : <250924.1640>
+//
+//  Description	
+//
+//  Notes
+//
+//  History
+//	
+/////////////////////////////////////////////////////////////////////////////
+//    Copyright (C) 2025  Robert Heller D/B/A Deepwoods Software
+//			51 Locke Hill Road
+//			Wendell, MA 01379-9728
+//
+//    This program is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program; if not, write to the Free Software
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+// 
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
 //use std::str::FromStr;
 use crate::*;
 
+// Define the gramar to take a layout struct as a parameter.  The result of
+// the parsing is to populate this structure with the contents of the layout
+// file.
 grammar(layout: &mut Layout);
 
+// Root non-terminal
 pub XtrakCadLayout: () = {
     layout1 ENDTRACKS EOL
 };
 
+// A layout is zero or more definitions
 layout1: () = {
     (),
     definition layout1,
 };
 
+// A definition is one logical entity in the layout.
 definition: () = {
     version,
     title,
@@ -40,7 +87,7 @@ definition: () = {
     EOL,
 };    
 
-    
+
 version: () = {
     VERSION <UINTEGER> <UINTEGER> DOT <UINTEGER> DOT <UINTEGER> EOL => layout.SetVersion(<>),
 };
@@ -288,7 +335,7 @@ bezierbodyelt: BezierBodyElement = {
 straight: () = {
     STRAIGHT <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <UINTEGER> <scalename> <UINTEGER> <FLOAT> <FLOAT>
         EOL <trackbody> ENDSEGS EOL =>
-		    layout.AddStraught(<>),
+		    layout.AddStraight(<>),
 };
 
 turnout: () = {

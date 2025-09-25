@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-22 10:08:21
-//  Last Modified : <250922.1028>
+//  Last Modified : <250924.1528>
 //
 //  Description	
 //
@@ -73,4 +73,5 @@ fn main() {
         Ok(l) => { l },
         Err(message) => { panic!("{}",message.to_string()); },
     };
+    println!("{:?}",layout);
 }
