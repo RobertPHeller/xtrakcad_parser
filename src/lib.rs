@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250925.0933>
+//  Last Modified : <250925.1712>
 //
 //  Description	
 //
@@ -894,7 +894,7 @@ impl BZRLine {
     }
 }
 
-/// Cornu struct
+/// Cornu curve track struct
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cornu {
     layer: u32,
@@ -950,6 +950,47 @@ impl Cornu {
     }
 }
 
+/// Curve track struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Curve {
+    layer: u32,
+    line_width: u32, 
+    scale: Scale, 
+    flags: u32, 
+    center_X: f64, 
+    centerY: f64, 
+    radius: f64, 
+    helix_turns: u32, 
+    desc_X: f64, 
+    desc_Y: f64, 
+    trackbody: TrackBody, 
+}
+
+impl Curve {
+    /// Initialize a Curve struct
+    /// ## Parameters:
+    /// - layer
+    /// - line_width
+    /// - scale
+    /// - flags
+    /// - center_X
+    /// - centerY
+    /// - radius
+    /// - helix_turns
+    /// - desc_X
+    /// - desc_Y
+    /// - trackbody
+    ///
+    /// __Returns__ an initialized Curve struct
+    pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, 
+               center_X: f64, centerY: f64, radius: f64, helix_turns: u32, 
+               desc_X: f64, desc_Y: f64, trackbody: TrackBody) -> Self {
+        Self {layer: layer, line_width: line_width, scale: scale, 
+              flags: flags, center_X: center_X, centerY: centerY, 
+              radius: radius, helix_turns: helix_turns, desc_X: desc_X, 
+              desc_Y: desc_Y, trackbody: trackbody}
+    }
+}
 
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
@@ -967,6 +1008,7 @@ pub struct Layout {
     drawings: HashMap<u32,Drawing>,
     bzrlines: HashMap<u32,BZRLine>,
     cornus: HashMap<u32,Cornu>,
+    curves: HashMap<u32,Curve>,
 }
 
 
@@ -985,7 +1027,7 @@ impl Layout {
                             current_layer: 0, structures: HashMap::new(),
                             drawings: HashMap::new(), 
                             bzrlines: HashMap::new(),
-                            cornus: HashMap::new()};
+                            cornus: HashMap::new(), curves: HashMap::new()};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1178,7 +1220,7 @@ impl Layout {
                                                 visible!=0,X1,Y1,X2,Y2,X3,Y3,
                                                 X4,Y4,desc_X,desc_Y,body));
     }
-    /// Add a Cornu
+    /// Add a Cornu curve track
     /// ## Parameters:
     /// - index
     /// - layer
@@ -1213,14 +1255,34 @@ impl Layout {
                                             angle2,radius2,center2x,center2y,
                                             body));
     }
+    /// Add a plain curved track
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - line_width
+    /// - pad1
+    /// - pad2
+    /// - scale
+    /// - flags
+    /// - center_X
+    /// - centerY
+    /// - pad3
+    /// - radius
+    /// - helix_turns
+    /// - desc_X
+    /// - desc_Y
+    /// - trackbody
+    /// 
+    /// __Returns__ nothing
     pub fn AddCurve(&mut self,index: u32, layer: u32, line_width: u32, 
                     pad1: u32, pad2: u32, scale: Scale, flags: u32, 
                     center_X: f64, centerY: f64, pad3: u32, radius: f64, 
                     helix_turns: u32, desc_X: f64, desc_Y: f64, 
                     trackbody: TrackBody) {
-        eprintln!("*** Layout::AddCurve({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{:?})",
-                    index,layer,pad1,pad2,line_width,scale,flags,center_X,
-                    centerY,pad3,radius,helix_turns,desc_X,desc_Y,trackbody);
+        self.curves.insert(index, Curve::new(layer, line_width, scale, 
+                                             flags, center_X, centerY, radius,
+                                             helix_turns, desc_X, desc_Y,
+                                             trackbody));
     }
     pub fn AddBezier(&mut self,index: u32, layer: u32, twidth: u32, color: u32,
                      pad1: f64, scale: Scale, vis: u32, X1: f64, Y1: f64, 
