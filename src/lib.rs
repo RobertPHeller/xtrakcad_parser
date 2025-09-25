@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250924.2005>
+//  Last Modified : <250925.0933>
 //
 //  Description	
 //
@@ -813,6 +813,144 @@ impl Structure {
     }
 }
 
+/// Drawing struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Drawing {
+    layer: u32, 
+    lineType: u32,
+    start_x: f64, 
+    start_y: f64, 
+    start: u32, 
+    angle: f64, 
+    segments: StructureBody,
+}
+
+impl Drawing {
+    /// Initialize a new Drawing struct
+    /// ## Parameters:
+    /// - layer 
+    /// - lineType 
+    /// - start_x 
+    /// - start_y 
+    /// - start 
+    /// - angle 
+    /// - segments
+    ///
+    /// __Returns__ an initialized Drawing struct
+    pub fn new(layer: u32, lineType: u32, start_x: f64, start_y: f64, 
+                start: u32, angle: f64, segments: StructureBody) -> Self {
+        Self {layer: layer, lineType: lineType, start_x: start_x, 
+              start_y: start_y, start: start, angle: angle, segments: segments}
+    }
+}
+
+/// BZRLine struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct BZRLine {
+    layer: u32,
+    line_width: u32, 
+    scale: Scale, 
+    visible: bool,
+    X1: f64,
+    Y1: f64,
+    X2: f64,
+    Y2: f64,
+    X3: f64,
+    Y3: f64,
+    X4: f64,
+    Y4: f64,
+    desc_X: f64,
+    desc_Y: f64,
+    body: BZRLineBody,
+}
+
+impl BZRLine {
+    /// Initialize a BZRLine struct
+    /// ## Parameters:
+    /// - layer 
+    /// - line_width 
+    /// - scale 
+    /// - visible 
+    /// - X1 
+    /// - Y1 
+    /// - X2 
+    /// - Y2 
+    /// - X3 
+    /// - Y3 
+    /// - X4 
+    /// - Y4 
+    /// - desc_X 
+    /// - desc_Y 
+    /// - body 
+    /// 
+    /// __Returns__ an initialized BZRLine struct
+    pub fn new(layer: u32, line_width: u32, scale: Scale, visible: bool,
+               X1: f64, Y1: f64, X2: f64, Y2: f64, X3: f64, Y3: f64,
+               X4: f64, Y4: f64, desc_X: f64, desc_Y: f64, body: BZRLineBody)
+            -> Self {
+        Self {layer: layer, line_width: line_width, scale: scale, 
+              visible: visible, X1: X1, Y1: Y1, X2: X2, Y2: Y2, X3: X3, Y3: Y3,
+              X4: X4, Y4: Y4, desc_X: desc_X, desc_Y: desc_Y, body: body}
+    }
+}
+
+/// Cornu struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Cornu {
+    layer: u32,
+    width: u32,
+    scale: Scale,
+    visible: bool,
+    pos1x: f64,
+    pos1y: f64,
+    angle1: f64,
+    radius1: f64,
+    center1x: f64,
+    center1y: f64,
+    pos2x: f64,
+    pos2y: f64,
+    angle2: f64,
+    radius2: f64,
+    center2x: f64,
+    center2y: f64,
+    body: CornuBody,
+}
+
+impl Cornu {
+    /// Initialize a Cornu struct
+    /// ## Parameters:
+    /// - layer
+    /// - width
+    /// - scale
+    /// - visible
+    /// - pos1x
+    /// - pos1y
+    /// - angle1
+    /// - radius1
+    /// - center1x
+    /// - center1y
+    /// - pos2x
+    /// - pos2y
+    /// - angle2
+    /// - radius2
+    /// - center2x
+    /// - center2y
+    /// - body
+    ///
+    /// __Returns__ an initialized Cornu struct
+    pub fn new(layer: u32, width: u32, scale: Scale, visible: bool, pos1x: f64,
+               pos1y: f64, angle1: f64, radius1: f64, center1x: f64,
+               center1y: f64, pos2x: f64, pos2y: f64, angle2: f64,
+               radius2: f64, center2x: f64, center2y: f64, body: CornuBody) -> Self {
+        Self {layer: layer, width: width, scale: scale, visible: visible, 
+              pos1x: pos1x, pos1y: pos1y, angle1: angle1, radius1: radius1, 
+              center1x: center1x, center1y: center1y, pos2x: pos2x, 
+              pos2y: pos2y, angle2: angle2, radius2: radius2, 
+              center2x: center2x, center2y: center2y, body: body}
+    }
+}
+
+
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
 pub struct Layout {
@@ -826,6 +964,9 @@ pub struct Layout {
     layers: HashMap<u32,Layer>,
     current_layer: u32,
     structures: HashMap<u32,Structure>,
+    drawings: HashMap<u32,Drawing>,
+    bzrlines: HashMap<u32,BZRLine>,
+    cornus: HashMap<u32,Cornu>,
 }
 
 
@@ -841,7 +982,10 @@ impl Layout {
                             title1: String::new(), title2: String::new(),
                             mapscale: 1, roomsize: (1.0,1.0),
                             scale: Scale::HO, layers: HashMap::new(),
-                            current_layer: 0, structures: HashMap::new()};
+                            current_layer: 0, structures: HashMap::new(),
+                            drawings: HashMap::new(), 
+                            bzrlines: HashMap::new(),
+                            cornus: HashMap::new()};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -983,28 +1127,91 @@ impl Layout {
                                                       adjopt,pieropt,
                                                       structbody));
     }
+    /// Add a drawing
+    /// ## Parameters:
+    /// - index 
+    /// - layer 
+    /// - lineType 
+    /// - pad1 
+    /// - pad2 
+    /// - start_x 
+    /// - start_y 
+    /// - start
+    /// - angle 
+    /// - segments
+    ///
+    /// __Returns__ nothing
     pub fn AddDrawing(&mut self,index: u32, layer: u32, lineType: u32,
                         pad1: u32, pad2: u32, start_x: f64, start_y: f64,
                         start: u32, angle: f64, segments: StructureBody) {
-        eprintln!("*** Layout::AddDrawing({},{},{},{},{},{},{},{},{},{:?})",index,layer,lineType,pad1,pad2,start_x,start_y,start,angle,segments);
+        self.drawings.insert(index,Drawing::new(layer,lineType,start_x,start_y,
+                                                start,angle,segments));
     }
+    /// Add a BZRLine
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - pad1
+    /// - pad2
+    /// - line_width
+    /// - scale
+    /// - visible
+    /// - X1
+    /// - Y1
+    /// - X2
+    /// - Y2
+    /// - X3
+    /// - Y3
+    /// - X4
+    /// - Y4
+    /// - pad3
+    /// - desc_X
+    /// - desc_Y
+    /// - body
+    /// 
+    /// __Returns__ nothing
     pub fn AddBZRLine(&mut self,index: u32, layer: u32, pad1: u32, pad2: u32,
                       line_width: u32, scale: Scale, visible: u32, X1: f64,
                       Y1: f64,X2: f64,Y2: f64,X3: f64,Y3: f64,X4: f64,Y4: f64,
                       pad3: u32,desc_X: f64,desc_Y: f64, body: BZRLineBody) {
-        eprintln!("*** Layout::AddBZRLine({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
-                    index,layer,pad1,pad2,line_width,scale,visible,X1,Y1,X2,Y2,
-                    X3,Y3,X4,Y4,pad3,desc_X,desc_Y,body);
+        self.bzrlines.insert(index,BZRLine::new(layer,line_width,scale,
+                                                visible!=0,X1,Y1,X2,Y2,X3,Y3,
+                                                X4,Y4,desc_X,desc_Y,body));
     }
+    /// Add a Cornu
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - width
+    /// - pad1
+    /// - pad2
+    /// - scale
+    /// - visible
+    /// - pos1x
+    /// - pos1y
+    /// - angle1
+    /// - radius1
+    /// - center1x
+    /// - center1y
+    /// - pos2x
+    /// - pos2y
+    /// - angle2
+    /// - radius2
+    /// - center2x
+    /// - center2y
+    /// - body: CornuBody 
+    ///
+    /// __Returns__ nothing
     pub fn AddCornu(&mut self,index: u32,layer: u32,width: u32,pad1: u32,
                     pad2: u32,scale: Scale,visible: u32,pos1x: f64,pos1y: f64,
                     angle1: f64,radius1: f64,center1x: f64,center1y: f64,
                     pos2x: f64,pos2y: f64,angle2: f64,radius2: f64,
                     center2x: f64,center2y: f64,body: CornuBody) {
-        eprintln!("*** Layout::AddCornu({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
-                    index,layer,width,pad1,pad2,scale,visible,pos1x,pos1y,
-                    angle1,radius1,center1x,center1y,pos2x,pos2y,angle2,
-                    radius2,center2x,center2y,body);
+        self.cornus.insert(index,Cornu::new(layer,width,scale,visible!=0,
+                                            pos1x,pos1y,angle1,radius1,
+                                            center1x,center1y,pos2x,pos2y,
+                                            angle2,radius2,center2x,center2y,
+                                            body));
     }
     pub fn AddCurve(&mut self,index: u32, layer: u32, line_width: u32, 
                     pad1: u32, pad2: u32, scale: Scale, flags: u32, 
@@ -1222,7 +1429,7 @@ impl StructureBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BZRLineBody {
     elements: Vec<StructureBodyElement>,
 }
@@ -1237,11 +1444,11 @@ impl BZRLineBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             BZSegments);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CornuBody {
     trackends: Vec<TrackBodyElement>,
     trackelements: Vec<CornuBodyElement>,
@@ -1261,13 +1468,13 @@ impl CornuBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FloatOrString {
     Float(f64),
     String(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TrackBodyElement {
     T1(u32,f64,f64,f64,Option<TrackBodySubElement>),
     T4(u32,u32,f64,f64,f64,TrackBodySubElement),
@@ -1275,13 +1482,13 @@ pub enum TrackBodyElement {
     E4(u32,f64,f64,f64,TrackBodySubElement),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TrackBodySubElement {
     T1(u32,f64,f64,Option<FloatOrString>),
     T4(u32,f64,f64,FloatOrString,f64,u32,u32,u32,f64),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TrackBody {
     elements: Vec<TrackBodyElement>,
 }
@@ -1296,7 +1503,7 @@ impl TrackBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BezierBody {
     elements: Vec<BezierBodyElement>,
 }
@@ -1311,7 +1518,7 @@ impl BezierBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BezierBodyElement {
     Curve1(u32,f64,f64,f64,f64,f64,f64),
     Curve2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
@@ -1338,7 +1545,7 @@ impl BezierBodyElement {
     }    
 }
 
-#[derive(Debug)] 
+#[derive(Debug, Clone, PartialEq)]
 pub struct IntegerList {
     elements: Vec<u32>,
 }
@@ -1353,7 +1560,7 @@ impl IntegerList {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TurnoutBody {
     turnout_elements: Vec<TurnoutBodyElement>,
     struct_elements:  Vec<StructureBodyElement>,
@@ -1375,7 +1582,7 @@ impl TurnoutBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TurnoutBodyElement {
     D(f64,f64),
     P(String,IntegerList),
@@ -1405,13 +1612,13 @@ impl TurnoutBodyElement {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CarAux(u32,u32,f64,f64,f64,TrackBody);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Aspect(String,String);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AspectList {
     aspects: Vec<Aspect>,
 }
