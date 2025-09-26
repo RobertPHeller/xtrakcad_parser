@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.0845>
+//  Last Modified : <250926.0919>
 //
 //  Description	
 //
@@ -1153,6 +1153,61 @@ impl Turntable {
     }
 }
 
+/// Joint track struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Joint {
+    layer: u32, 
+    width: u32,
+    scale: Scale, 
+    flags: u32,
+    l0: f64, 
+    l1: f64, 
+    R: f64, 
+    flip: u32, 
+    negate: u32,
+    S_curve: u32, 
+    x: f64, 
+    y: f64,
+    angle: f64,
+    desc_x: f64, 
+    desc_y: f64, 
+    body: TrackBody,
+}
+
+impl Joint {
+    /// Initialize a new Joint
+    /// ## Parameters:
+    /// - layer
+    /// - width
+    /// - scale
+    /// - flags
+    /// - l0
+    /// - l1
+    /// - R
+    /// - flip
+    /// - negate
+    /// - S_curve
+    /// - x
+    /// - y
+    /// - angle
+    /// - desc_x
+    /// - desc_y
+    /// - body
+    ///
+    /// __Returns__ a newly initialized Joint struct
+    pub fn new(layer: u32, width: u32, scale: Scale, flags: u32, l0: f64, 
+                l1: f64, R: f64, flip: u32, negate: u32, S_curve: u32, 
+                x: f64, y: f64, angle: f64, desc_x: f64, desc_y: f64, 
+                body: TrackBody) -> Self {
+        Self {layer: layer, width: width, scale: scale, flags: flags, 
+              l0: l0, l1: l1, R: R, flip: flip, negate: negate,
+              S_curve: S_curve, x: x, y: y, angle: angle, desc_x: desc_x, 
+              desc_y: desc_y, body: body}
+    }
+}
+
+
+
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
 pub struct Layout {
@@ -1175,6 +1230,7 @@ pub struct Layout {
     straights: HashMap<u32,Straight>,
     turnouts: HashMap<u32,Turnout>,
     turntables: HashMap<u32,Turntable>,
+    joints: HashMap<u32,Joint>,
 }
 
 
@@ -1198,7 +1254,8 @@ impl Layout {
                             beziers: HashMap::new(), 
                             straights: HashMap::new(),
                             turnouts: HashMap::new(),
-                            turntables: HashMap::new(),};
+                            turntables: HashMap::new(), 
+                            joints: HashMap::new(),};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1561,14 +1618,37 @@ impl Layout {
                                                     x, y, radius, current_ep,
                                                     body));
     }
+    /// Add a joint
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - width
+    /// - pad1
+    /// - pad2
+    /// - scale
+    /// - flags
+    /// - l0
+    /// - l1
+    /// - R
+    /// - flip
+    /// - negate
+    /// - S_curve
+    /// - x
+    /// - y
+    /// - pad3
+    /// - angle
+    /// - desc_x
+    /// - desc_y
+    /// - body
+    /// 
+    /// __Returns__ nothing
     pub fn AddJoint(&mut self,index: u32, layer: u32, width: u32, 
                     pad1: u32, pad2: u32, scale: Scale, flags: u32, 
                     l0: f64, l1: f64, R: f64, flip: u32, negate: u32, 
                     S_curve: u32, x: f64, y: f64, pad3: u32, angle: f64, 
                     desc_x: f64, desc_y: f64, body: TrackBody) {
-        eprintln!("*** Layout::AddJoint({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{:?})",
-                    index,layer,width,pad1,pad2,scale,flags,S_curve,x,y,pad3,
-                    angle,desc_x,desc_y,body);
+        self.joints.insert(index,Joint::new(layer,width,scale,flags,l0,l1,R,
+                           flip,negate,S_curve,x,y,angle,desc_x,desc_y,body));
     }
     pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
                   options: u32, typeofcar: u32, length: f64, width: f64, 
