@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.1121>
+//  Last Modified : <250926.1331>
 //
 //  Description	
 //
@@ -1415,6 +1415,73 @@ impl Signal {
     }
 }
 
+/// A sensor
+#[derive(Debug, Clone, PartialEq)]
+pub struct Sensor {
+    layer: u32,
+    scale: Scale,
+    visible: bool,
+    X: f64,
+    Y: f64,
+    name: String,
+    script: String,
+}
+
+impl Sensor {
+    /// Initialize a sensor
+    /// ## Parameters:
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - X
+    /// - Y
+    /// - name
+    /// script
+    ///
+    /// __Returns__ an initialized Sensor
+    pub fn new(layer: u32, scale: Scale, visible: bool, X: f64, Y: f64, 
+                name: String, script: String) -> Self {
+        Self {layer: layer, scale: scale, visible: visible, X: X, Y: Y, 
+                name: name, script: script,}
+    }
+}
+
+/// A control
+#[derive(Debug, Clone, PartialEq)]
+pub struct Control {
+    layer: u32,
+    scale: Scale, 
+    visible: bool, 
+    start_x: f64, 
+    start_y: f64, 
+    name: String, 
+    on_script: String, 
+    off_script: String,
+}
+
+impl Control {
+    /// Initialize a control
+    /// ## Parameters:
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - start_x
+    /// - start_y
+    /// - name
+    /// - on_script
+    /// - off_script
+    ///
+    /// __Returns__ an initialized Control
+    pub fn new(layer: u32, scale: Scale, visible: bool, start_x: f64, 
+                start_y: f64, name: String, on_script: String, 
+                off_script: String) -> Self {
+        Self {layer: layer, scale: scale, visible: visible, start_x: start_x, 
+                start_y: start_y, name: name, on_script: on_script, 
+                off_script: off_script}
+    }
+}
+
+
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
 pub struct Layout {
@@ -1444,6 +1511,8 @@ pub struct Layout {
     blocks: HashMap<u32,Block>,
     switchmotors: HashMap<u32,SwitchMotor>,
     signals: HashMap<u32,Signal>,
+    sensors: HashMap<u32,Sensor>,
+    controls: HashMap<u32,Control>,
 }
 
 
@@ -1472,7 +1541,8 @@ impl Layout {
                             notes: HashMap::new(),
                             textitems: HashMap::new(), blocks: HashMap::new(),
                             switchmotors: HashMap::new(),
-                            signals: HashMap::new(),
+                            signals: HashMap::new(), sensors: HashMap::new(), 
+                            controls: HashMap::new(),
                             };
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
@@ -1978,17 +2048,43 @@ impl Layout {
                                               numheads,name.clone(),
                                               aspectlist.clone()));
     }
+    /// Add a sensor
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - X
+    /// - Y
+    /// - name
+    /// - script
+    ///
+    /// __Returns__ nothing
     pub fn AddSensor(&mut self,index: u32,layer: u32,scale: Scale,visible: u32,
                      X: f64,Y: f64,name: String,script: String) {
-        eprintln!("*** Layout::AddSensor({},{},{:?},{},{},{},{},{})",
-                  index,layer,scale,visible,X,Y,name,script);
+        self.sensors.insert(index,Sensor::new(layer,scale,visible!=0,X,Y,
+                                              name.clone(),script.clone()));
     }
+    /// Add a control
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - start_x
+    /// - start_y
+    /// - name
+    /// - on_script
+    /// - off_script
+    ///
+    /// __Returns__ nothing
     pub fn AddControl(&mut self,index: u32,layer: u32,scale: Scale,
                      visible: u32, start_x: f64, start_y: f64, 
                      name: String, on_script: String, off_script: String) {
-        eprintln!("*** Layout::AddControl({},{},{:?},{},{},{},{},{},{})",
-                  index,layer,scale,visible,start_x,start_y,name,on_script,
-                  off_script);
+        self.controls.insert(index,Control::new(layer,scale,visible!=0,start_x,
+                                                start_y,name.clone(),
+                                                on_script.clone(),
+                                                off_script.clone()));
     }
 }
 
