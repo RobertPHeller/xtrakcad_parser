@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.0919>
+//  Last Modified : <250926.1015>
 //
 //  Description	
 //
@@ -1206,7 +1206,99 @@ impl Joint {
     }
 }
 
+/// Car struct
+#[derive(Debug, Clone, PartialEq)]                                              
+pub struct Car {
+    scale: Scale, 
+    title: String, 
+    options: u32, 
+    typeofcar: u32, 
+    length: f64, 
+    width: f64, 
+    truck_center_offset: u32, 
+    truck_center: f64, 
+    coupled_length: f64, 
+    color: u32, 
+    puchaseprice: f64, 
+    currentprice: f64, 
+    condition: u32, 
+    purchdate: u32, 
+    servdate: u32, 
+    notes: String, 
+    onlayout: Option<CarAux>, 
+}
 
+impl Car {
+    /// Initialize a new car
+    /// ## Parameters:
+    /// - scale
+    /// - title
+    /// - options
+    /// - typeofcar
+    /// - length
+    /// - width
+    /// - truck_center_offset
+    /// - truck_center
+    /// - coupled_length
+    /// - color
+    /// - puchaseprice
+    /// - currentprice
+    /// - condition
+    /// - purchdate
+    /// - servdate
+    /// - notes
+    /// - onlayout
+    ///
+    /// __Returns__ a feshly initialized Car
+    pub fn new(scale: Scale, title: String, options: u32, typeofcar: u32, 
+               length: f64, width: f64, truck_center_offset: u32, 
+               truck_center: f64, coupled_length: f64, color: u32, 
+               puchaseprice: f64, currentprice: f64, condition: u32, 
+               purchdate: u32, servdate: u32, notes: String, 
+               onlayout: Option<CarAux>) -> Self {
+        Self {scale: scale, title: title, options: options, 
+              typeofcar: typeofcar, length: length, width: width, 
+              truck_center_offset: truck_center_offset, 
+              truck_center: truck_center, coupled_length: coupled_length, 
+              color: color, puchaseprice: puchaseprice, 
+              currentprice: currentprice, condition: condition, 
+              purchdate: purchdate, servdate: servdate, notes: notes, 
+              onlayout: onlayout}
+    }
+}
+
+
+/// Note struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Note {
+    layer: u32, 
+    start_x: f64, 
+    start_y: f64, 
+    length: u32, 
+    typeofnote: u32, 
+    text1: String,  
+    text2: Option<String>, 
+}
+
+impl Note {
+    /// Initialize a new Note
+    /// ## Parameters:
+    /// - layer
+    /// - start_x
+    /// - start_y
+    /// - length
+    /// - typeofnote
+    /// - text1
+    /// - text2
+    ///
+    /// __Returns__ a new Note
+    pub fn new (layer: u32, start_x: f64, start_y: f64, length: u32, 
+                typeofnote: u32, text1: String, text2: Option<String>) -> Self {
+        Self {layer: layer, start_x: start_x, start_y: start_y, 
+              length: length, typeofnote: typeofnote, text1: text1, 
+              text2: text2 }
+    }
+}
 
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
@@ -1231,6 +1323,8 @@ pub struct Layout {
     turnouts: HashMap<u32,Turnout>,
     turntables: HashMap<u32,Turntable>,
     joints: HashMap<u32,Joint>,
+    cars: HashMap<u32,Car>,
+    notes: HashMap<u32,Note>,
 }
 
 
@@ -1255,7 +1349,8 @@ impl Layout {
                             straights: HashMap::new(),
                             turnouts: HashMap::new(),
                             turntables: HashMap::new(), 
-                            joints: HashMap::new(),};
+                            joints: HashMap::new(), cars: HashMap::new(),
+                            notes: HashMap::new(),};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1650,6 +1745,9 @@ impl Layout {
         self.joints.insert(index,Joint::new(layer,width,scale,flags,l0,l1,R,
                            flip,negate,S_curve,x,y,angle,desc_x,desc_y,body));
     }
+    /// Add a car
+    /// ## Parameters:
+    /// inx: u32, scale: Scale, title: String, options: u32, typeofcar: u32, length: f64, width: f64, pad0: u32, truck_center_offset: u32, truck_center: f64, coupled_length: f64, color: u32, puchaseprice: f64, currentprice: f64, condition: u32, purchdate: u32, servdate: u32, pad1: u32, pad2: u32, pad3: u32, pad4: u32, pad5: u32, pad6: u32, notes: String, onlayout: Option<CarAux>, 
     pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
                   options: u32, typeofcar: u32, length: f64, width: f64, 
                   pad0: u32,truck_center_offset: u32, truck_center: f64, 
@@ -1658,19 +1756,34 @@ impl Layout {
                   servdate: u32, pad1: u32,pad2: u32,pad3: u32,pad4: u32,
                   pad5: u32, pad6: u32, notes: String, 
                   onlayout: Option<CarAux>) {
-        eprintln!("*** Layout::AddCar({},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
-                    inx,scale,title,options,typeofcar,length,width,pad0,
-                    truck_center_offset,truck_center,coupled_length,color,
-                    puchaseprice,currentprice,condition,purchdate,servdate,
-                    pad1,pad2,pad3,pad4,pad5,pad6,
-                    notes,onlayout);
+        self.cars.insert(inx,Car::new(scale, title.clone(), options, 
+                                      typeofcar, length, width, 
+                                      truck_center_offset, truck_center, 
+                                      coupled_length, color, puchaseprice, 
+                                      currentprice, condition, purchdate, 
+                                      servdate, notes.clone(), 
+                                      onlayout.clone()));
     }
+    /// Add a note
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - pad1
+    /// - pad2
+    /// - start_x
+    /// - start_y
+    /// - length
+    /// - typeofnote
+    /// - text1
+    /// - text2
+    ///
+    /// __Returns__ nothing 
     pub fn AddNote(&mut self,index: u32, layer: u32, pad1: u32, pad2: u32,
                    start_x: f64, start_y: f64, length: u32, typeofnote: u32,
                    text1: String,  text2: Option<String>) {
-        eprintln!("*** Layout::AddNote({},{},{},{},{},{},{},{},{},{:?})",
-                  index,layer,pad1,pad2,start_x,start_y,length,typeofnote,
-                  text1,text2);
+        self.notes.insert(index,Note::new(layer, start_x, start_y, length, 
+                                          typeofnote, text1.clone(),  
+                                          text2.clone()));
     }
     pub fn AddText(&mut self,index: u32, layer: u32, color: u32, 
                    font_size: u32, pad1: u32, x: f64, y: f64, check_box: u32,
