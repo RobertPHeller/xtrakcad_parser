@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250925.2102>
+//  Last Modified : <250926.0845>
 //
 //  Description	
 //
@@ -1073,6 +1073,85 @@ impl Straight {
     }
 }
 
+/// Turnout track struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Turnout {
+    layer: u32, 
+    options: u32, 
+    postion: u32, 
+    scale: Scale, 
+    flags: u32, 
+    origx: f64, 
+    origy: f64, 
+    elev: u32, 
+    angle: f64, 
+    tablist: String, 
+    adjopt: Option<(f64, f64)>, 
+    pieropt: Option<(f64, String)>, 
+    body: TurnoutBody,
+}
+
+impl Turnout {
+    /// Initialize a new turnout
+    /// ## Parameters:
+    /// - layer
+    /// - options
+    /// - postion
+    /// - scale
+    /// - flags
+    /// - origx
+    /// - origy
+    /// - elev
+    /// - angle
+    /// - tablist
+    /// - adjopt
+    /// - pieropt
+    /// - body
+    ///
+    /// __Returns__ a fresh new Turnout struct
+    pub fn new(layer: u32, options: u32, postion: u32, scale: Scale, 
+               flags: u32, origx: f64, origy: f64, elev: u32, angle: f64, 
+               tablist: String, adjopt: Option<(f64, f64)>, 
+               pieropt: Option<(f64, String)>, body: TurnoutBody, ) -> Self {
+        Self {layer: layer, options: options, postion: postion, scale: scale, 
+              flags: flags, origx: origx, origy: origy, elev: elev, 
+              angle: angle, tablist: tablist, adjopt: adjopt,
+              pieropt: pieropt, body: body}
+    }
+} 
+
+/// Turntable track struct
+#[derive(Debug, Clone, PartialEq)]
+pub struct Turntable {
+    layer:u32, 
+    scale: Scale, 
+    visible: bool, 
+    x: f64,
+    y: f64, 
+    radius: f64, 
+    current_ep: Option<u32>, 
+    body: TrackBody,
+}
+
+impl Turntable {
+    /// Initialize a new Turntable
+    /// ## Parameters:
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - x
+    /// - y
+    /// - radius
+    /// - current_ep
+    /// - body
+    ///
+    /// __Returns__ a fresh Turntable
+    pub fn new(layer:u32, scale: Scale, visible: bool, x: f64, y: f64, 
+               radius: f64, current_ep: Option<u32>, body: TrackBody) -> Self {
+        Self {layer: layer, scale: scale, visible: visible, x: x, y: y, 
+              radius: radius, current_ep: current_ep, body: body }
+    }
+}
 
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
@@ -1094,6 +1173,8 @@ pub struct Layout {
     curves: HashMap<u32,Curve>,
     beziers: HashMap<u32,Bezier>,
     straights: HashMap<u32,Straight>,
+    turnouts: HashMap<u32,Turnout>,
+    turntables: HashMap<u32,Turntable>,
 }
 
 
@@ -1115,7 +1196,9 @@ impl Layout {
                             bzrlines: HashMap::new(),
                             cornus: HashMap::new(), curves: HashMap::new(),
                             beziers: HashMap::new(), 
-                            straights: HashMap::new(),};
+                            straights: HashMap::new(),
+                            turnouts: HashMap::new(),
+                            turntables: HashMap::new(),};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1424,23 +1507,59 @@ impl Layout {
                                                   flags, Desc_x, Desc_y, 
                                                   body));
     }
+    /// Add a turnout
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - options
+    /// - postion
+    /// - pad1
+    /// - scale
+    /// - flags
+    /// - origx
+    /// - origy
+    /// - elev
+    /// - angle
+    /// - tablist
+    /// - adjopt
+    /// - pieropt
+    /// - body
+    ///
+    /// __Returns__ nothing
     pub fn AddTurnout(&mut self,index: u32, layer: u32, options: u32, 
                       postion: u32, pad1: u32, scale: Scale, flags: u32, 
                       origx: f64, origy: f64, elev: u32, angle: f64, 
                       tablist: String, adjopt: Option<(f64, f64)>, 
                       pieropt: Option<(f64, String)>, body: TurnoutBody) {
-        eprintln!("*** Layout::AddTurnout({},{},{},{},{},{:?},{},{},{},{},{},{},{:?},{:?},{:?})",
-                      index, layer, options, postion, pad1, scale, flags,
-                      origx, origy, elev, angle, tablist, adjopt, pieropt, 
-                      body );
+        self.turnouts.insert(index,Turnout::new(layer, options, postion, 
+                                                scale, flags, origx, 
+                                                origy, elev, angle, tablist, 
+                                                adjopt, pieropt, body));
     }
+    /// Add a turntable
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - pad1
+    /// - pad2
+    /// - pad3
+    /// - scale
+    /// - visible
+    /// - x
+    /// - y
+    /// - pad4
+    /// - radius
+    /// - current_ep, 
+    /// - body
+    ///
+    /// __Returns__ nothing
     pub fn AddTurntable(&mut self,index: u32, layer:u32, pad1: u32, pad2: u32,
                         pad3: u32, scale: Scale, visible: u32, x: f64,
                         y: f64, pad4: u32, radius: f64, 
                         current_ep: Option<u32>, body: TrackBody) {
-        eprintln!("*** Layout::AddTurntable({},{},{},{},{},{:?},{},{},{},{},{},{:?},{:?})",
-                    index,layer,pad1,pad2,pad3,scale,visible,x,y,pad4,radius,
-                    current_ep,body);
+        self.turntables.insert(index,Turntable::new(layer, scale, visible!=0, 
+                                                    x, y, radius, current_ep,
+                                                    body));
     }
     pub fn AddJoint(&mut self,index: u32, layer: u32, width: u32, 
                     pad1: u32, pad2: u32, scale: Scale, flags: u32, 
