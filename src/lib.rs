@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250925.1712>
+//  Last Modified : <250925.2007>
 //
 //  Description	
 //
@@ -992,9 +992,92 @@ impl Curve {
     }
 }
 
+/// Bezier curve track struct 
+#[derive(Debug, Clone, PartialEq)]                                              
+pub struct Bezier {
+    layer: u32, 
+    width: u32, 
+    color: u32, 
+    scale: Scale, 
+    visible: bool, 
+    X1: f64, 
+    Y1: f64, 
+    X2: f64, 
+    Y2: f64, 
+    X3: f64, 
+    Y3: f64, 
+    X4: f64, 
+    Y4: f64, 
+    desc_X: f64, 
+    desc_Y: f64, 
+    body: BezierBody, 
+}
+
+impl Bezier {
+    /// Initialize a Bezier struct
+    /// ## Parameters:
+    /// - layer
+    /// - width
+    /// - color
+    /// - scale
+    /// - visible
+    /// - X1
+    /// - Y1
+    /// - X2
+    /// - Y2
+    /// - X3
+    /// - Y3
+    /// - X4
+    /// - Y4
+    /// - desc_X
+    /// - desc_Y
+    /// - body
+    ///
+    /// __Returns__ an initialized Bezier struct 
+    pub fn new(layer: u32, width: u32, color: u32, scale: Scale, visible: bool, 
+                X1: f64, Y1: f64, X2: f64, Y2: f64, X3: f64, Y3: f64, 
+                X4: f64, Y4: f64, desc_X: f64, desc_Y: f64, body: BezierBody) -> Self {
+        Self {layer: layer, width: width, color: color, scale: scale, 
+              visible: visible, X1: X1, Y1: Y1, X2: X2, Y2: Y2, X3: X3, 
+              Y3: Y3, X4: X4, Y4: Y4, desc_X: desc_X, desc_Y: desc_Y, 
+              body: body }
+
+    }
+} 
+
+
+/// Straight track struct 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Straight {
+    layer: u32, 
+    line_width: u32, 
+    scale: Scale, 
+    flags: u32, 
+    Desc_x: f64, 
+    Desc_y: f64, 
+    body: TrackBody,
+}
+
+impl Straight {
+    /// Initialize a Straight struct
+    /// ## Parameters:
+    /// - layer
+    /// - line_width
+    /// - scale
+    /// - flags
+    /// - Desc_x
+    /// - Desc_y
+    /// - body
+    pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, Desc_x: f64, Desc_y: f64, body: TrackBody) -> Self {
+        Self { layer: layer, line_width: line_width, scale: scale, flags: flags, Desc_x: Desc_x, Desc_y: Desc_y, body: body }
+    }
+}
+
+
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
 pub struct Layout {
+    filename: String,
     file_version: u32,
     program_version: (u32,u32,u32),
     title1: String,
@@ -1009,6 +1092,8 @@ pub struct Layout {
     bzrlines: HashMap<u32,BZRLine>,
     cornus: HashMap<u32,Cornu>,
     curves: HashMap<u32,Curve>,
+    beziers: HashMap<u32,Bezier>,
+    straights: HashMap<u32,Straight>,
 }
 
 
@@ -1020,14 +1105,17 @@ impl Layout {
     ///
     /// __Returns__ A freshly parsed layout or an error.
     pub fn new(layoutfilename: String) -> Result<Self, LayoutError> {
-        let mut this = Self{file_version: 0, program_version: (0,0,0),
+        let mut this = Self{filename: layoutfilename.clone(), file_version: 0, 
+                            program_version: (0,0,0),
                             title1: String::new(), title2: String::new(),
                             mapscale: 1, roomsize: (1.0,1.0),
                             scale: Scale::HO, layers: HashMap::new(),
                             current_layer: 0, structures: HashMap::new(),
                             drawings: HashMap::new(), 
                             bzrlines: HashMap::new(),
-                            cornus: HashMap::new(), curves: HashMap::new()};
+                            cornus: HashMap::new(), curves: HashMap::new(),
+                            beziers: HashMap::new(), 
+                            straights: HashMap::new(),};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1284,22 +1372,58 @@ impl Layout {
                                              helix_turns, desc_X, desc_Y,
                                              trackbody));
     }
-    pub fn AddBezier(&mut self,index: u32, layer: u32, twidth: u32, color: u32,
+    /// Add a AddBezier curve track
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - width
+    /// - color
+    /// - pad1
+    /// - scale
+    /// - vis
+    /// - X1
+    /// - Y1
+    /// - X2
+    /// - Y2
+    /// - X3
+    /// - Y3
+    /// - X4
+    /// - Y4
+    /// - pad2
+    /// - desc_X
+    /// - desc_Y
+    /// - body
+    /// 
+    /// __Returns__ nothing
+    pub fn AddBezier(&mut self,index: u32, layer: u32, width: u32, color: u32,
                      pad1: f64, scale: Scale, vis: u32, X1: f64, Y1: f64, 
                      X2: f64, Y2: f64, X3: f64, Y3: f64, X4: f64, Y4: f64, 
                      pad2: u32, desc_X: f64, desc_Y: f64, body: BezierBody) {
-        eprintln!("*** Layout::AddBezier({},{},{},{},{},{:?},{},{},{},{},{},{},{},{},{},{},{},{},{:?})",
-                    index,layer,twidth,color,pad1,scale,vis,X1,Y1,X2,Y2,X3,Y3,X4,Y4,pad2,desc_X,desc_Y,body);
+        self.beziers.insert(index,Bezier::new(layer, width, color, scale, 
+                                              vis!=0, X1, Y1, X2, Y2, X3, Y3,
+                                              X4, Y4, desc_X, desc_Y, body));
     }
-    //STRAIGHT (sp) index (sp) layer (sp) line-width (sp) 0 (sp) 0 (sp) scale (sp) descshow&visibility&no_ties&bridge&roadbed (sp) Desc-x (sp) Desc-y
+    /// Add a straight track segment
+    /// ##  Parameters:
+    /// - index
+    /// - layer
+    /// - line_width
+    /// - pad1
+    /// - pad2
+    /// - scale
+    /// - flags
+    /// - Desc_x
+    /// - Desc_y
+    /// - body
+    /// 
+    /// __Returns__ nothing
     pub fn AddStraight(&mut self,index: u32, layer: u32, line_width: u32, 
                        pad1: u32, pad2: u32, scale: Scale, flags: u32, 
                        Desc_x: f64, Desc_y: f64, body: TrackBody) {
-        eprintln!("*** Layout::AddStraight({},{},{},{},{},{:?},{},{},{},{:?})",
-                index, layer, line_width, pad1, pad2, scale, flags, Desc_x, 
-                Desc_y, body);
+        self.straights.insert(index,Straight::new(layer, line_width, scale, 
+                                                  flags, Desc_x, Desc_y, 
+                                                  body));
     }
-    //TURNOUT (sp) index (sp) layer (sp) options (sp) postion (sp) 0 (sp) scale (sp)visible&no_ties&bridge&roadbed (sp)origx (sp) origy (sp) elev (sp) angle (sp) "Manufacturer<tab>Description <tab>Part<tab>"</tab></tab></tab>
     pub fn AddTurnout(&mut self,index: u32, layer: u32, options: u32, 
                       postion: u32, pad1: u32, scale: Scale, flags: u32, 
                       origx: f64, origy: f64, elev: u32, angle: f64, 
@@ -1310,8 +1434,6 @@ impl Layout {
                       origx, origy, elev, angle, tablist, adjopt, pieropt, 
                       body );
     }
-    //TURNTABLE (sp) index (sp) layer (sp) 0 (sp) 0 (sp) 0 (sp) scale (sp) 
-    //               visible (sp) x (sp) y (sp) 0 (sp) radius (sp) current-ep
     pub fn AddTurntable(&mut self,index: u32, layer:u32, pad1: u32, pad2: u32,
                         pad3: u32, scale: Scale, visible: u32, x: f64,
                         y: f64, pad4: u32, radius: f64, 
@@ -1320,11 +1442,6 @@ impl Layout {
                     index,layer,pad1,pad2,pad3,scale,visible,x,y,pad4,radius,
                     current_ep,body);
     }
-    //             
-    // JOINT (sp )index (sp) layer (sp) width (sp) 0 (sp) 0 (sp) scale (sp) 
-    //       visible&no_ties&bridge&roadbed (sp) l0 (sp) l1 (sp) R (sp) flip 
-    //       (sp) negate (sp) S-curve (sp) x (sp) y (sp) 0 (sp) angle (sp) 
-    //       desc-x (sp) desc-y
     pub fn AddJoint(&mut self,index: u32, layer: u32, width: u32, 
                     pad1: u32, pad2: u32, scale: Scale, flags: u32, 
                     l0: f64, l1: f64, R: f64, flip: u32, negate: u32, 
