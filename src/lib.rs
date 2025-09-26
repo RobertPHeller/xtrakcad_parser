@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.1037>
+//  Last Modified : <250926.1121>
 //
 //  Description	
 //
@@ -1332,6 +1332,88 @@ impl TextItem {
     }
 }
 
+/// A Block
+#[derive(Debug, Clone, PartialEq)]
+pub struct Block {
+    name: String, 
+    script: String, 
+    tracklist: IntegerList,
+}
+
+impl Block {
+    /// Initialize a new Block
+    /// ## Parameters:
+    /// - name
+    /// - script
+    /// - tracklist
+    ///
+    /// __Returns__ a new Block
+    pub fn new(name: String, script: String, tracklist: IntegerList) -> Self {
+        Self{name: name, script: script, tracklist: tracklist, }
+    }
+}
+
+/// A switch motor control
+#[derive(Debug, Clone, PartialEq)]
+pub struct SwitchMotor {
+    turnout: u32,
+    name: String,
+    normal: String,
+    reverse: String,
+    pointsense: String,
+}
+
+impl SwitchMotor {
+    /// Initialize a SwitchMotor
+    /// ## Parameters:
+    /// - turnout
+    /// - name
+    /// - normal
+    /// - reverse
+    /// - pointsense
+    ///
+    /// __Returns__ a newly initialized SwitchMotor
+    pub fn new(turnout: u32, name: String, normal: String, reverse: String, 
+                pointsense: String) -> Self {
+        Self {turnout: turnout, name: name, normal: normal, reverse: reverse, 
+                pointsense: pointsense,}
+    }
+}
+
+/// A signal
+#[derive(Debug, Clone, PartialEq)]
+pub struct Signal {
+    layer: u32, 
+    scale: Scale,
+    visible: bool,
+    X: f64, 
+    Y: f64, 
+    A: f64, 
+    numheads: u32,
+    name: String, 
+    aspectlist: AspectList,
+}
+
+impl Signal {
+    /// Initialize a Signal
+    /// ## Parameters:
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - X
+    /// - Y
+    /// - A
+    /// - numheads
+    /// - name
+    /// - aspectlist
+    ///
+    /// __Returns__ An initiaized Signal
+    pub fn new(layer: u32, scale: Scale, visible: bool, X: f64, Y: f64, A: f64,
+               numheads: u32, name: String, aspectlist: AspectList) -> Self {
+        Self {layer: layer, scale: scale, visible: visible, X: X, Y: Y, A: A, 
+              numheads: numheads, name: name, aspectlist: aspectlist,}
+    }
+}
 
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
@@ -1359,6 +1441,9 @@ pub struct Layout {
     cars: HashMap<u32,Car>,
     notes: HashMap<u32,Note>,
     textitems: HashMap<u32,TextItem>,
+    blocks: HashMap<u32,Block>,
+    switchmotors: HashMap<u32,SwitchMotor>,
+    signals: HashMap<u32,Signal>,
 }
 
 
@@ -1385,7 +1470,10 @@ impl Layout {
                             turntables: HashMap::new(), 
                             joints: HashMap::new(), cars: HashMap::new(),
                             notes: HashMap::new(),
-                            textitems: HashMap::new(),};
+                            textitems: HashMap::new(), blocks: HashMap::new(),
+                            switchmotors: HashMap::new(),
+                            signals: HashMap::new(),
+                            };
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1841,19 +1929,54 @@ impl Layout {
                                                   x, y, check_box!=0, 
                                                   text.clone(), rotation));
     }
+    /// Add a block
+    /// ## Parameters:
+    /// - index
+    /// - name
+    /// - script
+    /// - tracklist
+    ///
+    /// __Returns__ nothing 
     pub fn AddBlock(&mut self,index: u32, name: String, script: String, tracklist: IntegerList) {
-        eprintln!("*** Layout::AddBlock({},{},{},{:?})",index,name,script,tracklist);
+        self.blocks.insert(index,Block::new(name.clone(), script.clone(), 
+                                            tracklist.clone()));
     }
+    /// Add a Switch motor
+    /// - index
+    /// - turnout
+    /// - name
+    /// - normal
+    /// - reverse
+    /// - pointsense
+    ///
+    /// __Returns__ nothing
     pub fn AddSwitchMotor(&mut self,index: u32,turnout: u32,name: String,
                           normal: String ,reverse: String,pointsense: String) {
-        eprintln!("*** Layout::AddSwitchMotor({},{},{},{},{},{})",
-                    index,turnout,name,normal,reverse,pointsense);
+        self.switchmotors.insert(index,SwitchMotor::new(turnout,name.clone(),
+                                                        normal.clone(),
+                                                        reverse.clone(),
+                                                        pointsense.clone()));
     }
+    /// Add a signal
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - scale
+    /// - visible
+    /// - X
+    /// - Y
+    /// - A
+    /// - numheads
+    /// - name
+    /// - aspectlist
+    ///
+    /// __Returns__ nothing
     pub fn AddSignal(&mut self,index: u32,layer: u32, scale: Scale, 
                      visible: u32, X: f64, Y: f64, A: f64, numheads: u32,
                      name: String, aspectlist: AspectList) {
-        eprintln!("*** Layout::AddSignal({},{},{:?},{}.{},{},{},{},{},{:?})",
-                    index,layer,scale,visible,X,Y,A,numheads,name,aspectlist);
+        self.signals.insert(index,Signal::new(layer,scale,visible!=0,X,Y,A,
+                                              numheads,name.clone(),
+                                              aspectlist.clone()));
     }
     pub fn AddSensor(&mut self,index: u32,layer: u32,scale: Scale,visible: u32,
                      X: f64,Y: f64,name: String,script: String) {
