@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.1015>
+//  Last Modified : <250926.1037>
 //
 //  Description	
 //
@@ -1300,6 +1300,39 @@ impl Note {
     }
 }
 
+/// A test item
+#[derive(Debug, Clone, PartialEq)]
+pub struct TextItem {
+    layer: u32, 
+    color: u32, 
+    font_size: u32, 
+    x: f64, 
+    y: f64, 
+    check_box: bool,
+    text: String, 
+    rotation: u32,
+}
+
+impl TextItem {
+    /// Initialize a Text Item
+    /// ## Parameters:
+    /// - layer
+    /// - color
+    /// - font_size
+    /// - x
+    /// - y
+    /// - check_box
+    /// - text
+    /// - rotation
+    ///
+    /// __Returns__ an initialized TextItem
+    pub fn new(layer: u32, color: u32, font_size: u32, x: f64, y: f64, check_box: bool, text: String, rotation: u32) -> Self {
+        Self {layer: layer, color: color, font_size: font_size, x: x, y: y, 
+              check_box: check_box, text: text, rotation: rotation }
+    }
+}
+
+
 /// Layout structure.  Contains a parsed layout file.
 #[derive(Debug)]
 pub struct Layout {
@@ -1325,6 +1358,7 @@ pub struct Layout {
     joints: HashMap<u32,Joint>,
     cars: HashMap<u32,Car>,
     notes: HashMap<u32,Note>,
+    textitems: HashMap<u32,TextItem>,
 }
 
 
@@ -1350,7 +1384,8 @@ impl Layout {
                             turnouts: HashMap::new(),
                             turntables: HashMap::new(), 
                             joints: HashMap::new(), cars: HashMap::new(),
-                            notes: HashMap::new(),};
+                            notes: HashMap::new(),
+                            textitems: HashMap::new(),};
         let file = match File::open(&layoutfilename) {
             Ok(f) => f,
             Err(message) => {
@@ -1785,11 +1820,26 @@ impl Layout {
                                           typeofnote, text1.clone(),  
                                           text2.clone()));
     }
+    /// Add a Text item
+    /// ## Parameters:
+    /// - index
+    /// - layer
+    /// - color
+    /// - font_size
+    /// - pad1
+    /// - x
+    /// - y
+    /// - check_box
+    /// - text
+    /// - rotation
+    ///
+    /// __Returns__ nothing 
     pub fn AddText(&mut self,index: u32, layer: u32, color: u32, 
                    font_size: u32, pad1: u32, x: f64, y: f64, check_box: u32,
                    text: String, rotation: u32) {
-        eprintln!("*** Layout::AddText({},{},{},{},{},{},{},{},{},{})",
-                  index,layer,color,font_size,pad1,x,y,check_box,text,rotation);
+        self.textitems.insert(index,TextItem::new(layer, color, font_size,
+                                                  x, y, check_box!=0, 
+                                                  text.clone(), rotation));
     }
     pub fn AddBlock(&mut self,index: u32, name: String, script: String, tracklist: IntegerList) {
         eprintln!("*** Layout::AddBlock({},{},{},{:?})",index,name,script,tracklist);
