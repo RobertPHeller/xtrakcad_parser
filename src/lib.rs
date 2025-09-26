@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250925.2007>
+//  Last Modified : <250925.2102>
 //
 //  Description	
 //
@@ -1451,7 +1451,6 @@ impl Layout {
                     index,layer,width,pad1,pad2,scale,flags,S_curve,x,y,pad3,
                     angle,desc_x,desc_y,body);
     }
-    // CAR (sp) inx (sp) scale (sp) "Title" (sp) options (sp) type (sp) length (sp) width (sp) 0 (sp) truck-center-offset*1000 (sp)truck-center (sp) coupled-length (sp) color (sp) puchaseprice (sp) currentprice (sp) condition (sp) purchdate (sp) servdate (sp) "notes"
     pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
                   options: u32, typeofcar: u32, length: f64, width: f64, 
                   pad0: u32,truck_center_offset: u32, truck_center: f64, 
@@ -1508,6 +1507,7 @@ impl Layout {
     }
 }
 
+/// Standard scales
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Scale {
     HO,
@@ -1516,6 +1516,7 @@ pub enum Scale {
     G,
 }
 
+/// BZSegment elements
 #[derive(Debug, PartialEq, Clone)]
 pub enum BZSegment {
     S1(u32,f64,f64,f64,f64,f64),
@@ -1524,15 +1525,27 @@ pub enum BZSegment {
     C2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
 }
 
+/// BZSegments list struct
 #[derive(Debug, PartialEq, Clone)] 
 pub struct BZSegments {
     elements: Vec<BZSegment>,
 }
 
 impl BZSegments {
+    /// Create a new empty list of BZSegments
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty BZSegments struct
     pub fn new() -> Self {
         Self {elements: Vec::new()}
     }
+    /// Append a BZSegment to a list of BZSegments
+    /// ## Parameters:
+    /// - e a new BZSegment
+    /// - b a BZSegments list struct
+    ///
+    /// __Returns__ the updated list.
     pub fn AppendBZSeg(e: BZSegment, mut b: BZSegments) -> Self {
         b.elements.insert(0,e);
         b
@@ -1540,33 +1553,59 @@ impl BZSegments {
 }
 
 
+/// BZLSegments list.
 #[derive(Debug, PartialEq, Clone)]
 pub struct BZLSegments {
     elements: Vec<StructureBodyElement>,
 }
 
 impl BZLSegments {
+    /// Initialize a new empty BZLSegments list.
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a new empty BZLSegments struct
     pub fn new() -> Self {
         Self{elements: Vec::new()}
     }
+    /// Append a StructureBodyElement to a BZLSegments list
+    /// ## Parameters:
+    /// - e a StructureBodyElement to add to the list
+    /// - b the BZLSegments list to update
+    ///
+    /// __Returns__ the updated list.
     pub fn Append(e: StructureBodyElement, mut b:BZLSegments) -> Self {
         b.elements.insert(0,e);
         b
     }
 }
+
+/// A FBlock element
 #[derive(Debug, PartialEq, Clone)] 
 pub struct FBlockElement(f64,f64,u32);
-    
+
+/// A FBlock liist
 #[derive(Debug, PartialEq, Clone)]
 pub struct FBlock {
     elememts: Vec<FBlockElement>
 }
 
 impl FBlock {
+    /// Initialize an empty FBlock
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an initialized and empty FBlock
     pub fn new() -> Self {
         //eprintln!("*** FBlock::new()");
         Self{ elememts: Vec::new()}
     }
+    /// Add a new FBlock element
+    /// ## Parameters:
+    /// - e a FBlock element to add
+    /// - b the list to update
+    ///
+    /// __Returns__ the updated FBlock list
     pub fn Append(e: FBlockElement, mut b: FBlock) -> Self {
         //eprintln!("*** FBlock::Append({:?},{:?})",e,b);
         b.elememts.insert(0,e);
@@ -1574,8 +1613,7 @@ impl FBlock {
     }
 }
 
-
-
+/// A Structure Body Element
 #[derive(Debug, PartialEq, Clone)]
 pub enum StructureBodyElement {
     D(f64,f64),
@@ -1591,16 +1629,28 @@ pub enum StructureBodyElement {
     H(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,BZLSegments),
 }
 
+/// A list of Structure Body Elements
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct StructureBody {
     elememts: Vec<StructureBodyElement>,
 }
 
 impl StructureBody {
+    /// Initialize a StructureBody
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty StructureBody
     pub fn new() -> Self {
         //eprintln!("*** StructureBody::new()");
         Self {elememts: Vec::new()}
     }
+    /// Add an element to a StructureBody
+    /// ## Parameters:
+    /// - e the new element
+    /// - b the body to update
+    ///
+    /// __Returns__ the updated body
     pub fn Append(e: StructureBodyElement, mut b: StructureBody) -> Self {
         //eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
         b.elememts.insert(0,e);
@@ -1608,25 +1658,40 @@ impl StructureBody {
     }
 }
 
+/// A BZRLineBody Struct
 #[derive(Debug, Clone, PartialEq)]
 pub struct BZRLineBody {
     elements: Vec<StructureBodyElement>,
 }
 
+
 impl BZRLineBody {
+    /// Initialize a BZRLineBody Struct
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a fresh empty BZRLineBody Struct
     pub fn new() -> Self {
         Self{ elements: Vec::new()}
     }
+    /// Add a StructureBodyElement to a BZRLineBody Struct
+    /// ## Parameters:
+    /// - e a StructureBodyElement to add
+    /// - b the body to update
+    ///
+    /// __Returns__ the updated body
     pub fn Append(e: StructureBodyElement, mut b: BZRLineBody) -> Self {
         b.elements.insert(0,e);
         b
     }
 }
 
+/// A CornuBodyElement
 #[derive(Debug, Clone, PartialEq)]
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             BZSegments);
 
+/// A Cornu body
 #[derive(Debug, Clone, PartialEq)]
 pub struct CornuBody {
     trackends: Vec<TrackBodyElement>,
@@ -1634,25 +1699,44 @@ pub struct CornuBody {
 }
 
 impl CornuBody {
+    /// Initialize a Cornu body struct
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a fresh empty Cornu body
     pub fn new() -> Self {
         Self{ trackends: Vec::new(), trackelements: Vec::new(),}
     }
+    /// Add a track body element (track ends) to a Cornu body struct
+    /// ## Parameters:
+    /// - e a TrackBodyElement (track end)
+    /// - b the Cornu body struct to update
+    ///
+    /// __Returns__ the updated Cornu body struct
     pub fn AppendTrack(e: TrackBodyElement, mut b: CornuBody) -> Self {
         b.trackends.insert(0,e);
         b
     }
+    /// Add a CornuBodyElement to a Cornu body struct 
+    /// ## Parameters:
+    /// - e a Cornu body element
+    /// - b a Cornu body struct  to update
+    ///
+    /// __Returns__ the updated body.
     pub fn AppendCornu(e: CornuBodyElement, mut b: CornuBody) -> Self {
         b.trackelements.insert(0,e);
         b
     }
 }
 
+/// A Float (f64) or String
 #[derive(Debug, Clone, PartialEq)]
 pub enum FloatOrString {
     Float(f64),
     String(String),
 }
 
+/// A track body element (track ends)
 #[derive(Debug, Clone, PartialEq)]
 pub enum TrackBodyElement {
     T1(u32,f64,f64,f64,Option<TrackBodySubElement>),
@@ -1661,42 +1745,68 @@ pub enum TrackBodyElement {
     E4(u32,f64,f64,f64,TrackBodySubElement),
 }
 
+/// A track body sub element
 #[derive(Debug, Clone, PartialEq)]
 pub enum TrackBodySubElement {
     T1(u32,f64,f64,Option<FloatOrString>),
     T4(u32,f64,f64,FloatOrString,f64,u32,u32,u32,f64),
 }
 
+/// A track body (conventual track)
 #[derive(Debug, Clone, PartialEq)]
 pub struct TrackBody {
     elements: Vec<TrackBodyElement>,
 }
 
 impl TrackBody {
+    /// Initialize a track body
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty track body
     pub fn new() -> Self {
         Self{ elements: Vec::new(),}
     }
+    /// Add a track end to a track body
+    /// ## Parameters:
+    /// - e a track body element (a track end)
+    /// - b the track body to update
+    ///
+    /// __Returns__ the updated body
     pub fn AppendTrack(e:TrackBodyElement, mut b: TrackBody) -> Self {
         b.elements.insert(0,e);
         b
     }
 }
 
+/// A Bezier Body
 #[derive(Debug, Clone, PartialEq)]
 pub struct BezierBody {
     elements: Vec<BezierBodyElement>,
 }
 
 impl BezierBody {
+    /// Initialize a Bezier Body
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty Bezier Body
     pub fn new() -> Self {
         Self {elements: Vec::new()}
     }
+    /// Add an element to Bezier Body
+    /// ## Parameters:
+    /// - e an element
+    /// - b the body to update
+    ///
+    /// __Returns__ the updated body
     pub fn Append(e: BezierBodyElement, mut b: BezierBody) -> Self {
         b.elements.insert(0,e);
         b
     }
 }
 
+/// Bezier Body elements
 #[derive(Debug, Clone, PartialEq)]
 pub enum BezierBodyElement {
     Curve1(u32,f64,f64,f64,f64,f64,f64),
@@ -1710,6 +1820,11 @@ pub enum BezierBodyElement {
 }
 
 impl BezierBodyElement {
+    /// Make a track end into a Bezier Body element
+    /// ## Parameters:
+    /// - e the track end
+    ///
+    /// __Returns__ a Bezier Body element.
     pub fn MakeTrackEnd(e:TrackBodyElement) -> BezierBodyElement {
         match e {
         TrackBodyElement::T1(a,b,c,d,e) =>
@@ -1724,21 +1839,34 @@ impl BezierBodyElement {
     }    
 }
 
+/// A list of integers (u32)
 #[derive(Debug, Clone, PartialEq)]
 pub struct IntegerList {
     elements: Vec<u32>,
 }
 
 impl IntegerList {
+    /// Initialize an IntegerList
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty IntegerList
     pub fn new() -> Self {
         Self { elements: Vec::new() }
     }
+    /// Add an integer to the list
+    /// ## Parameters:
+    /// - e the integer to add
+    /// - b the list to update
+    ///
+    /// __Returns__ the updated list
     pub fn Append(e: u32, mut b: IntegerList) -> Self {
         b.elements.insert(0,e);
         b
     }
 }
 
+/// A turnout body
 #[derive(Debug, Clone, PartialEq)]
 pub struct TurnoutBody {
     turnout_elements: Vec<TurnoutBodyElement>,
@@ -1746,14 +1874,33 @@ pub struct TurnoutBody {
 }
 
 impl TurnoutBody {
+    /// Initialize a TurnoutBody
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty TurnoutBody
     pub fn new() -> Self {
         Self { turnout_elements: Vec::new(), struct_elements: Vec::new(),}
     }
+    /// Add a track turnout element to the TurnoutBody
+    /// ## Parameters:
+    /// - e the turnout element to add
+    /// - b the TurnoutBody
+    ///
+    /// __Returns__ the updated turnout body
     pub fn AppendTurnoutBodyElement(e: TurnoutBodyElement,
                                     mut b: TurnoutBody) -> Self {
         b.turnout_elements.insert(0,e);
         b
     }
+    /// Add a structure body element to the TurnoutBody (Structures that
+    /// include tracks, eg bridges, etc.) are represented a turnouts with a
+    /// single path.)
+    /// ## Parameters:
+    /// - e the StructureBodyElement to add
+    /// - b the TurnoutBody
+    ///
+    /// __Returns__ the updated turnout body
     pub fn AppendStructureBodyElement(e: StructureBodyElement,
                                       mut b: TurnoutBody) -> Self {
         b.struct_elements.insert(0,e); 
@@ -1761,6 +1908,7 @@ impl TurnoutBody {
     }
 }
 
+/// TurnoutBodyElements
 #[derive(Debug, Clone, PartialEq)]
 pub enum TurnoutBodyElement {
     D(f64,f64),
@@ -1778,6 +1926,11 @@ pub enum TurnoutBodyElement {
 }
 
 impl TurnoutBodyElement {
+    /// Convert track ends
+    /// ## Parameters:
+    /// - tbelt The track end
+    ///
+    /// __Returns__ the converted track end
     pub fn MakeTurnoutEnd(tbelt: TrackBodyElement) -> Self {
         match tbelt {
         TrackBodyElement::T1(a,b,c,d,e) =>
@@ -1791,21 +1944,35 @@ impl TurnoutBodyElement {
         }
     }
 }
+
+/// CarAux -- car on layout information
 #[derive(Debug, Clone, PartialEq)]
 pub struct CarAux(u32,u32,f64,f64,f64,TrackBody);
 
+/// Signal aspect
 #[derive(Debug, Clone, PartialEq)]
 pub struct Aspect(String,String);
 
+/// Signal aspect list
 #[derive(Debug, Clone, PartialEq)]
 pub struct AspectList {
     aspects: Vec<Aspect>,
 }
 
 impl AspectList {
+    /// Initialize an AspectList
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ an empty AspectList
     pub fn new() -> Self {
         Self{aspects: Vec::new()}
     }
+    /// Add an aspect to an AspectList
+    /// ## Parameters:
+    /// - b the AspectList
+    /// - a the aspect name
+    /// - s the aspect script
     pub fn AddAspect(mut b: AspectList, a: String, s: String) -> Self {
         b.aspects.insert(0,Aspect(a,s));
         b
