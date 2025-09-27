@@ -9,6 +9,7 @@ keywords = ["model-railway", "railroad", "model-railroad", "parser", "cad"]
 categories = ["command-line-utilities"]
 repository = "https://github.com/RobertPHeller/xtrakcad_parser"
 documentation = "https://docs.rs/xtrakcad_parser"
+description = "Parser for XTrackCAD layout files"
 
 [dependencies]
 lalrpop-util = { version = "0.21.0", features = ["unicode"] }
