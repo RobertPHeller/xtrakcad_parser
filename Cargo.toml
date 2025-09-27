@@ -7,6 +7,8 @@ license = "GPL-2.0-only"
 readme = "README.md"
 keywords = ["model-railway", "railroad", "model-railroad", "parser", "cad"]
 categories = ["command-line-utilities"]
+repository = "https://github.com/RobertPHeller/xtrakcad_parser"
+documentation = "https://docs.rs/xtrakcad_parser"
 
 [dependencies]
 lalrpop-util = { version = "0.21.0", features = ["unicode"] }
