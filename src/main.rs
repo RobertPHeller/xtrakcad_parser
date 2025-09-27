@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-22 10:08:21
-//  Last Modified : <250924.1528>
+//  Last Modified : <250927.1113>
 //
 //  Description	
 //
@@ -73,5 +73,40 @@ fn main() {
         Ok(l) => { l },
         Err(message) => { panic!("{}",message.to_string()); },
     };
-    println!("{:?}",layout);
+    println!("{}",layout);
+    for (index, layer) in layout.LayerIter() {
+        println!("Layer # {}: {}",*index,*layer);
+    }
+    for (index, structure) in layout.StructureIter() {
+        println!("Structure # {}: {}",*index,*structure);
+    }
+    for (index, drawing) in layout.DrawingIter() {
+        println!("Drawing # {}: {}",*index,*drawing);
+    }
+    for (index, bzrline) in layout.BZRLineIter() {
+        println!("BZRLine # {}: {}",*index,*bzrline);
+    }
+    for (index, cornu) in layout.CornuIter() {
+        println!("Cornu # {}: {}",*index,*cornu);
+    }
+    for (index, curve) in layout.CurveIter() {
+        println!("Curve # {}: {}",*index,*curve);
+    }
+    for (index, bezier) in layout.BezierIter() {
+        println!("Bezier # {}: {}",*index,*bezier);
+    }
+    for (index, straight) in layout.StraightIter() {
+        println!("Straight # {}: {}",*index,*straight);
+    }
+    println!("TurnoutIndexes: {:?}",layout.TurnoutIndexes());
+    println!("TurntableIndexes: {:?}",layout.TurntableIndexes());
+    println!("JointIndexes: {:?}",layout.JointIndexes());
+    println!("CarIndexes: {:?}",layout.CarIndexes());
+    println!("NoteIndexes: {:?}",layout.NoteIndexes());
+    println!("TextItemIndexes: {:?}",layout.TextItemIndexes());
+    println!("BlockIndexes: {:?}",layout.BlockIndexes());
+    println!("SwitchMotorIndexes: {:?}",layout.SwitchMotorIndexes());
+    println!("SignalIndexes: {:?}",layout.SignalIndexes());
+    println!("SensorIndexes: {:?}",layout.SensorIndexes());
+    println!("ControlIndexes: {:?}",layout.ControlIndexes());
 }

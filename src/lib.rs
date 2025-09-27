@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.2119>
+//  Last Modified : <250927.1112>
 //
 //  Description	
 //
@@ -896,12 +896,12 @@ pub struct Structure {
 
 impl fmt::Display for Structure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let tabOpt = self.textfields.find('\t');
-        let name = match tabOpt {
-            None => self.textfields.clone(),
-            Some(tab) => self.textfields[0..tab].to_string(),
-        };
-        write!(f, "<#Structure {}>", name)
+        let mut tabs = self.textfields.split('\t');
+        let manu = tabs.next().unwrap_or("");
+        let name = tabs.next().unwrap_or("");
+        let partno = tabs.next().unwrap_or("");
+        
+        write!(f, "<#Structure ({},{},{})>", manu,name,partno)
     }
 }
 impl Structure {
@@ -1019,7 +1019,9 @@ pub struct Drawing {
 
 impl fmt::Display for Drawing {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<#Drawing>")
+        write!(f, "<#Drawing {},{},{} {} segments>",
+                        self.start_x,self.start_y,self.angle,
+                        self.segments.len())
     }
 }
 
@@ -1105,24 +1107,31 @@ pub struct BZRLine {
     body: BZRLineBody,
 }
 
+impl fmt::Display for BZRLine {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#BZRLine {} {} {} {} {} {} {} {}>", self.x1, self.y1,
+                self.x2,self.y2,self.x3,self.y3,self.x4,self.y4)
+    }
+}
+
 impl BZRLine {
     /// Initialize a BZRLine struct
     /// ## Parameters:
-    /// - layer 
-    /// - line_width 
-    /// - scale 
-    /// - visible 
-    /// - X1 
-    /// - Y1 
-    /// - X2 
-    /// - Y2 
-    /// - X3 
-    /// - Y3 
-    /// - X4 
-    /// - Y4 
-    /// - desc_X 
-    /// - desc_Y 
-    /// - body 
+    /// - layer the layer the line is on
+    /// - line_width line width
+    /// - scale the model scale
+    /// - visible is it visible
+    /// - X1 first X coord
+    /// - Y1 first Y coord
+    /// - X2 second X coord
+    /// - Y2 second Y coord
+    /// - X3 third X coord
+    /// - Y3 third Y coord
+    /// - X4 fourth X coord
+    /// - Y4 fourth Y coord
+    /// - desc_X description X
+    /// - desc_Y description Y
+    /// - body body elements
     /// 
     /// __Returns__ an initialized BZRLine struct
     pub fn new(layer: u32, line_width: u32, scale: Scale, visible: bool,
@@ -1133,6 +1142,96 @@ impl BZRLine {
               visible: visible, x1: X1, y1: Y1, x2: X2, y2: Y2, x3: X3, y3: Y3,
               x4: X4, y4: Y4, desc_x: desc_X, desc_y: desc_Y, body: body}
     }
+    /// The layer the line is on
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer the line is on
+    pub fn Layer(&self) -> u32 {self.layer}
+    /// The line width
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the line width
+    pub fn LineWidth(&self) -> u32 {self.line_width}
+    /// The Model scale
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the model Scale
+    pub fn Scale(&self) -> Scale {self.scale}
+    /// Is the line visible
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the line's visibility
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    /// The first X coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the first X coordinate
+    pub fn X1(&self) -> f64 {self.x1}
+    /// The first Y coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the first Y coordinate 
+    pub fn Y1(&self) -> f64 {self.y1}
+    /// The second X coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the second X coordinate 
+    pub fn X2(&self) -> f64 {self.x2}
+    /// The second Y coordinate 
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the second Y coordinate 
+    pub fn Y2(&self) -> f64 {self.y2}
+    /// The third X coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the third X coordinate
+    pub fn X3(&self) -> f64 {self.x3}
+    /// The third Y coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the thirs Y coordinate
+    pub fn Y3(&self) -> f64 {self.y3}
+    /// The fourth X coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the fourth X coordinate
+    pub fn X4(&self) -> f64 {self.x4}
+    /// The fourth Y coordinate
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the fourth Y coordinate
+    pub fn Y4(&self) -> f64 {self.y4}
+    /// The X description
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the X description
+    pub fn DescX(&self) -> f64 {self.desc_x}
+    /// The Y description
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Y description
+    pub fn DescY(&self) -> f64 {self.desc_y}
+    /// The body elements
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the body elements
+    pub fn Body(&self) -> BZRLineBody {self.body.clone()}
 }
 
 /// Cornu curve track struct
@@ -1157,26 +1256,34 @@ pub struct Cornu {
     body: CornuBody,
 }
 
+impl fmt::Display for Cornu {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Cornu {},{},{},{},{},{} {},{},{},{},{},{}>",
+                    self.pos1x,self.pos1y,self.angle1,self.radius1,self.center1x,self.center1y,
+                    self.pos2x,self.pos2y,self.angle2,self.radius2,self.center2x,self.center2y)
+    }
+}
+
 impl Cornu {
     /// Initialize a Cornu struct
     /// ## Parameters:
-    /// - layer
-    /// - width
-    /// - scale
-    /// - visible
-    /// - pos1x
-    /// - pos1y
-    /// - angle1
-    /// - radius1
-    /// - center1x
-    /// - center1y
-    /// - pos2x
-    /// - pos2y
-    /// - angle2
-    /// - radius2
-    /// - center2x
-    /// - center2y
-    /// - body
+    /// - layer the layer number this object is on
+    /// - width the width
+    /// - scale the model scale
+    /// - visible Is it visible?
+    /// - pos1x position 1 x
+    /// - pos1y position 1 y
+    /// - angle1 position 1 angle
+    /// - radius1 position 1 radius
+    /// - center1x position 1 center x
+    /// - center1y position 1 center y
+    /// - pos2x position 2 x
+    /// - pos2y position 2 y
+    /// - angle2 position 2 angle
+    /// - radius2 position 2 radius
+    /// - center2x position 2 center x
+    /// - center2y position 2 center y
+    /// - body the body elements
     ///
     /// __Returns__ an initialized Cornu struct
     pub fn new(layer: u32, width: u32, scale: Scale, visible: bool, pos1x: f64,
@@ -1189,6 +1296,23 @@ impl Cornu {
               pos2y: pos2y, angle2: angle2, radius2: radius2, 
               center2x: center2x, center2y: center2y, body: body}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Width(&self) -> u32 {self.width}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    pub fn Pos1x(&self) -> f64 {self.pos1x}
+    pub fn Pos1y(&self) -> f64 {self.pos1y}
+    pub fn Angle1(&self) -> f64 {self.angle1}
+    pub fn Radius1(&self) -> f64 {self.radius1}
+    pub fn Center1x(&self) -> f64 {self.center1x}
+    pub fn Center1y(&self) -> f64 {self.center1y}
+    pub fn Pos2x(&self) -> f64 {self.pos2x}
+    pub fn Pos2y(&self) -> f64 {self.pos2y}
+    pub fn Angle2(&self) -> f64 {self.angle2}
+    pub fn Radius2(&self) -> f64 {self.radius2}
+    pub fn Center2x(&self) -> f64 {self.center2x}
+    pub fn Center2y(&self) -> f64 {self.center2y}
+    pub fn Body(&self) -> CornuBody {self.body.clone()}
 }
 
 /// Curve track struct
@@ -1199,7 +1323,7 @@ pub struct Curve {
     scale: Scale, 
     flags: u32, 
     center_x: f64, 
-    centery: f64, 
+    center_y: f64, 
     radius: f64, 
     helix_turns: u32, 
     desc_x: f64, 
@@ -1207,30 +1331,49 @@ pub struct Curve {
     trackbody: TrackBody, 
 }
 
+impl fmt::Display for Curve {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Curve {},{},{} {} turns {},{}>",self.center_x,
+                    self.center_y,self.radius,self.helix_turns,self.desc_x,
+                    self.desc_y)
+    }
+}
+
 impl Curve {
     /// Initialize a Curve struct
     /// ## Parameters:
-    /// - layer
-    /// - line_width
-    /// - scale
-    /// - flags
-    /// - center_X
-    /// - centerY
-    /// - radius
-    /// - helix_turns
-    /// - desc_X
-    /// - desc_Y
-    /// - trackbody
+    /// - layer the layer the curve is on
+    /// - line_width the line width
+    /// - scale the model scale
+    /// - flags the flage
+    /// - center_X the center x
+    /// - center_Y the center y
+    /// - radius the radiu s
+    /// - helix_turns the number of helix turns
+    /// - desc_X the descr x
+    /// - desc_Y the descr y
+    /// - trackbody the track end points
     ///
     /// __Returns__ an initialized Curve struct
     pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, 
-               center_X: f64, centerY: f64, radius: f64, helix_turns: u32, 
+               center_X: f64, center_Y: f64, radius: f64, helix_turns: u32, 
                desc_X: f64, desc_Y: f64, trackbody: TrackBody) -> Self {
         Self {layer: layer, line_width: line_width, scale: scale, 
-              flags: flags, center_x: center_X, centery: centerY, 
+              flags: flags, center_x: center_X, center_y: center_Y, 
               radius: radius, helix_turns: helix_turns, desc_x: desc_X, 
               desc_y: desc_Y, trackbody: trackbody}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn LineWidth(&self) -> u32 {self.line_width}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Flags(&self) -> u32 {self.flags}
+    pub fn CenterX(&self) -> f64 {self.center_x}
+    pub fn CenterY(&self) -> f64 {self.center_y}
+    pub fn Radius(&self) -> f64 {self.radius}
+    pub fn HelixTurns(&self) -> u32 {self.helix_turns}
+    pub fn DescX(&self) -> f64 {self.desc_x}
+    pub fn DescY(&self) -> f64 {self.desc_y}
+    pub fn Trackbody(&self) -> TrackBody {self.trackbody.clone()}
 }
 
 /// Bezier curve track struct 
@@ -1254,25 +1397,32 @@ pub struct Bezier {
     body: BezierBody, 
 }
 
+impl fmt::Display for Bezier {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Bezier {} {} {} {} {} {} {} {}>", self.x1, self.y1,       
+                self.x2,self.y2,self.x3,self.y3,self.x4,self.y4)
+    }
+}
+
 impl Bezier {
     /// Initialize a Bezier struct
     /// ## Parameters:
-    /// - layer
-    /// - width
-    /// - color
-    /// - scale
-    /// - visible
-    /// - X1
-    /// - Y1
-    /// - X2
-    /// - Y2
-    /// - X3
-    /// - Y3
-    /// - X4
-    /// - Y4
-    /// - desc_X
-    /// - desc_Y
-    /// - body
+    /// - layer The layer the bezier track is on
+    /// - width the width
+    /// - color the color
+    /// - scale the model scale
+    /// - visible is it visible
+    /// - X1 the first X coordinate
+    /// - Y1 the first Y coordinate
+    /// - X2 the second X coordinate
+    /// - Y2 the second Y coordinate
+    /// - X3 the third X coordinate
+    /// - Y3 the third Y coordinate
+    /// - X4 the fourth X coordinate
+    /// - Y4 the fourth Y coordinate
+    /// - desc_X the descr X
+    /// - desc_Y the descr y
+    /// - body the body elements (track ends)
     ///
     /// __Returns__ an initialized Bezier struct 
     pub fn new(layer: u32, width: u32, color: u32, scale: Scale, visible: bool, 
@@ -1284,6 +1434,22 @@ impl Bezier {
               body: body }
 
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Width(&self) -> u32 {self.width}
+    pub fn Color(&self) -> u32 {self.color}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Visible(&self) -> bool {self.visible}
+    pub fn X1(&self) -> f64 {self.x1}
+    pub fn Y1(&self) -> f64 {self.y1}
+    pub fn X2(&self) -> f64 {self.x2}
+    pub fn Y2(&self) -> f64 {self.y2}
+    pub fn X3(&self) -> f64 {self.x3}
+    pub fn Y3(&self) -> f64 {self.y3}
+    pub fn X4(&self) -> f64 {self.x4}
+    pub fn Y4(&self) -> f64 {self.y4}
+    pub fn DescX(&self) -> f64 {self.desc_x}
+    pub fn DescY(&self) -> f64 {self.desc_y}
+    pub fn Body(&self) -> BezierBody {self.body.clone()}
 } 
 
 
@@ -1299,21 +1465,36 @@ pub struct Straight {
     body: TrackBody,
 }
 
+impl fmt::Display for Straight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Straight {},{}>",self.desc_x,self.desc_y)
+    }
+}
+
 impl Straight {
     /// Initialize a Straight struct
     /// ## Parameters:
-    /// - layer
-    /// - line_width
-    /// - scale
-    /// - flags
-    /// - Desc_x
-    /// - Desc_y
-    /// - body
+    /// - layer the layer the track is on
+    /// - line_width its line width
+    /// - scale ist model scale
+    /// - flags its flags
+    /// - Desc_x its desc X
+    /// - Desc_y its descr Y
+    /// - body it track ends
+    ///
+    /// __Returns__ an initialized Straight struct
     pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, 
                 Desc_x: f64, Desc_y: f64, body: TrackBody) -> Self {
         Self { layer: layer, line_width: line_width, scale: scale, 
                 flags: flags, desc_x: Desc_x, desc_y: Desc_y, body: body }
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn LineWidth(&self) -> u32 {self.line_width}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Flags(&self) -> u32 {self.flags}
+    pub fn DescX(&self) -> f64 {self.desc_x}
+    pub fn DescY(&self) -> f64 {self.desc_y}
+    pub fn Body(&self) -> TrackBody {self.body.clone()}
 }
 
 /// Turnout track struct
@@ -2504,7 +2685,7 @@ impl Layout {
     /// None
     ///
     /// __Returns__ a Iterator into the structures
-    pub fn bzrlineIter(&self) -> impl Iterator<Item = (&u32, &BZRLine)> {
+    pub fn BZRLineIter(&self) -> impl Iterator<Item = (&u32, &BZRLine)> {
         self.bzrlines.iter()
     } 
     /// Return the layout's cornu indexes
@@ -2848,6 +3029,18 @@ pub enum Scale {
     G,
 }
 
+impl fmt::Display for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Scale::HO => write!(f,"HO"),
+            Scale::N  => write!(f,"N"),
+            Scale::O  => write!(f,"O"),
+            Scale::G  => write!(f,"G"),
+        }
+    }
+}
+
+
 /// BZSegment elements
 #[derive(Debug, PartialEq, Clone)]
 pub enum BZSegment {
@@ -2910,16 +3103,40 @@ impl BZLSegments {
         b.elements.insert(0,e);
         b
     }
+    /// Number of segments
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the number of segments
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl fmt::Display for BZLSegments { 
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#BZLSegments {} elements>", self.elements.len())
+    }
 }
 
 /// A FBlock element
 #[derive(Debug, PartialEq, Clone)] 
 pub struct FBlockElement(f64,f64,u32);
 
+impl fmt::Display for FBlockElement {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#FBlockElement {} {} {}>",self.0,self.1,self.2)
+    }
+}
+
 /// A FBlock liist
 #[derive(Debug, PartialEq, Clone)]
 pub struct FBlock {
     elements: Vec<FBlockElement>
+}
+
+impl fmt::Display for FBlock {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#FBlock {} elements>", self.elements.len())
+    }
 }
 
 impl FBlock {
@@ -2943,6 +3160,17 @@ impl FBlock {
         b.elements.insert(0,e);
         b
     }
+    /// The number of body elements
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the number of elements
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for FBlock {
+    type Output = FBlockElement;
+    fn index(&self, i: usize) -> &FBlockElement {&self.elements[i]}
 }
 
 /// A Structure Body Element
@@ -2959,6 +3187,49 @@ pub enum StructureBodyElement {
     Y(u32,u32,f64,u32,u32,FBlock),
     Z(u32,f64,f64,f64,u32,f64,String),
     H(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,BZLSegments),
+}
+
+impl fmt::Display for StructureBodyElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StructureBodyElement::D(a,b) =>
+                write!(fp, "<#StructureBodyElement::D({},{})>",a,b),
+            StructureBodyElement::L(a,b,c,d,e,f,g,h,i) =>
+                write!(fp, "<#StructureBodyElement::L({},{},{},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g,h,i),
+            StructureBodyElement::M(a,b,c,d,e,f,g,h,i,j) => 
+                write!(fp, "<#StructureBodyElement::M({},{},{},{},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g,h,i,j),
+            StructureBodyElement::F(a,b,c,d,e,f) =>
+                write!(fp, "<#StructureBodyElement::F({},{},{},{},{},{})>",
+                                                    a,b,c,d,
+                        match e {
+                            None => String::from("None"),
+                            Some(v) => format!("Some({})", v),
+                        },f),
+            StructureBodyElement::A(a,b,c,d,e,f,g,h,i) =>
+                write!(fp, "<#StructureBodyElement::A({},{},{},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g,h,i),
+            StructureBodyElement::B(a,b,c,d,e,f,g,h,i,j) =>
+                write!(fp, "<#StructureBodyElement::B({},{},{},{},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g,h,i,j),
+            StructureBodyElement::Q(a,b,c,d,e,f,g,h,i) =>
+                write!(fp, "<#StructureBodyElement::Q({},{},{},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g,h,i),
+            StructureBodyElement::G(a,b,c,d,e,f,g) =>
+                write!(fp, "<#StructureBodyElement::G({},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g),
+            StructureBodyElement::Y(a,b,c,d,e,f) =>
+                write!(fp, "<#StructureBodyElement::Y({},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f),
+            StructureBodyElement::Z(a,b,c,d,e,f,g) =>
+                write!(fp, "<#StructureBodyElement::Z({},{},{},{},{},{},{})>",
+                                                    a,b,c,d,e,f,g),
+            StructureBodyElement::H(a,b,c,d,e,f,g,h,i,j,k) =>
+                write!(fp, "<#StructureBodyElement::H({},{},{},{},{},{},{},{},{},{},{})>",
+                                                a,b,c,d,e,f,g,h,i,j,k),
+        }
+    }
 }
 
 /// A list of Structure Body Elements
@@ -3013,6 +3284,16 @@ pub struct BZRLineBody {
     elements: Vec<StructureBodyElement>,
 }
 
+impl fmt::Display for BZRLineBody {
+    /// Display a BZRLineBody
+    /// ## Parameters:
+    /// - f formatter to write to
+    ///
+    /// __Returns__ a fmt::Result
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#BZRLineBody {} elements>", self.elements.len())
+    }
+}
 
 impl BZRLineBody {
     /// Initialize a BZRLineBody Struct
@@ -3033,6 +3314,17 @@ impl BZRLineBody {
         b.elements.insert(0,e);
         b
     }
+    /// Number of elements
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the number of elemnts
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for BZRLineBody {
+    type Output = StructureBodyElement;
+    fn index(&self, i: usize) -> &StructureBodyElement {&self.elements[i]}
 }
 
 /// A CornuBodyElement
