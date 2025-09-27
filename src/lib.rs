@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250927.1525>
+//  Last Modified : <250927.1616>
 //
 //  Description	
 //
@@ -3857,6 +3857,13 @@ pub struct TurnoutBody {
     struct_elements:  Vec<StructureBodyElement>,
 }
 
+impl fmt::Display for TurnoutBody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#TurnoutBody {} turnout elements {} structure elements>",
+                self.turnout_elements.len(), self.struct_elements.len())
+    }
+}
+
 impl TurnoutBody {
     /// Initialize a TurnoutBody
     /// ## Parameters:
@@ -3890,6 +3897,16 @@ impl TurnoutBody {
         b.struct_elements.insert(0,e); 
         b
     }
+    pub fn TurnoutElementsLen(&self) -> usize {self.turnout_elements.len()}
+    pub fn TurnoutElement(&self, i: usize) -> &TurnoutBodyElement {
+        &self.turnout_elements[i]
+    }
+    pub fn StructureElementsLen(&self) -> usize {self.struct_elements.len()}
+}
+
+impl Index<usize> for TurnoutBody {
+    type Output = StructureBodyElement;
+    fn index(&self, i: usize) -> &StructureBodyElement {&self.struct_elements[i]}
 }
 
 /// TurnoutBodyElements
@@ -3908,6 +3925,53 @@ pub enum TurnoutBodyElement {
     E1(f64,f64,f64,Option<TrackBodySubElement>),
     E4(u32,f64,f64,f64,TrackBodySubElement),
 }
+
+impl fmt::Display for TurnoutBodyElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TurnoutBodyElement::D(a,b) =>
+                write!(fp,"<#TurnoutBodyElement D({},{})>",a,b),
+            TurnoutBodyElement::P(s,iList) => 
+                write!(fp,"<#TurnoutBodyElement P({},{})>",s,iList),
+            TurnoutBodyElement::S1(a,b,c,d,e,f) => 
+                write!(fp,"<#TurnoutBodyElement S1({},{},{},{},{},{})>",
+                            a,b,c,d,e,f),
+            TurnoutBodyElement::S2(a,b,c,d,e,f,g,h,i) => 
+                write!(fp,"<#TurnoutBodyElement S2({},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i),
+            TurnoutBodyElement::C1(a,b,c,d,e,f,g) => 
+                write!(fp,"<#TurnoutBodyElement C1({},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g),
+            TurnoutBodyElement::C2(a,b,c,d,e,f,g,h,i) => 
+                write!(fp,"<#TurnoutBodyElement C2({},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i),
+            TurnoutBodyElement::J1(a,b,c,d,e,f,g,h,i,j) => 
+                write!(fp,"<#TurnoutBodyElement J1({},{},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i,j),
+            TurnoutBodyElement::J2(a,b,c,d,e,f,g,h,i,j,k,l) => 
+                write!(fp,"<#TurnoutBodyElement J2({},{},{},{},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i,j,k,l),
+            TurnoutBodyElement::T1(a,b,c,d,None) => 
+                write!(fp,"<#TurnoutBodyElement T1({},{},{},{})>",a,b,c,d),
+            TurnoutBodyElement::T1(a,b,c,d,Some(e)) => 
+                write!(fp,"<#TurnoutBodyElement T1({},{},{},{},{})>",
+                            a,b,c,d,e),
+            TurnoutBodyElement::T4(a,b,c,d,e,f) => 
+                write!(fp,"<#TurnoutBodyElement T4({},{},{},{},{},{})>",
+                                    a,b,c,d,e,f),
+            TurnoutBodyElement::E1(a,b,c,None) => 
+                write!(fp,"<#TurnoutBodyElement E1({},{},{})>",a,b,c),
+            TurnoutBodyElement::E1(a,b,c,Some(d)) => 
+                write!(fp,"<#TurnoutBodyElement E1({},{},{},{})>",a,b,c,d),
+            TurnoutBodyElement::E4(a,b,c,d,e) => 
+                write!(fp,"<#TurnoutBodyElement E4({},{},{},{},{})>",a,b,c,d,e),
+            
+        }
+    }
+}
+    
+
+
 
 impl TurnoutBodyElement {
     /// Convert track ends
@@ -3933,14 +3997,33 @@ impl TurnoutBodyElement {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CarAux(u32,u32,f64,f64,f64,TrackBody);
 
+impl fmt::Display for CarAux {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#CarAux {} {} {} {} {} {}>",
+                self.0,self.1,self.2,self.3,self.4,self.5)
+    }
+}
+
 /// Signal aspect
 #[derive(Debug, Clone, PartialEq)]
 pub struct Aspect(String,String);
+
+impl fmt::Display for Aspect {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,"<#Aspect {} {}>",self.0, self.1)
+    }
+}
 
 /// Signal aspect list
 #[derive(Debug, Clone, PartialEq)]
 pub struct AspectList {
     aspects: Vec<Aspect>,
+}
+
+impl fmt::Display for AspectList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,"<#AspectList {} aspects>",self.aspects.len())
+    }
 }
 
 impl AspectList {
@@ -3961,4 +4044,10 @@ impl AspectList {
         b.aspects.insert(0,Aspect(a,s));
         b
     }
+    pub fn len(&self) -> usize {self.aspects.len()}
+}
+
+impl Index<usize> for AspectList {
+    type Output = Aspect;
+    fn index(&self, i: usize) -> &Aspect {&self.aspects[i]}
 }
