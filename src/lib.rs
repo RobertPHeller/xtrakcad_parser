@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250926.1331>
+//  Last Modified : <250926.2119>
 //
 //  Description	
 //
@@ -51,7 +51,7 @@ use std::io::{self, BufReader};
 use std::str::FromStr;
 use std::fmt;
 use std::collections::HashMap;
-
+use std::ops::Index;
 
 // Pull in the parser module
 lalrpop_mod!(pub xtrakcad); // synthesized by LALRPOP
@@ -733,6 +733,17 @@ pub struct Layer {
     tie_spacing: f64,
 }
 
+impl fmt::Display for Layer {
+    /// Display a Layer
+    /// ## Parameters:
+    /// - f formatter to write to
+    ///
+    /// __Returns__ a fmt::Result
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Layer {}>", self.name)
+    }
+}
+
 impl Layer {
     /// Initialize a layer
     /// ## Parameters:
@@ -767,6 +778,103 @@ impl Layer {
               max_track_grade: max_track_grade,tie_length: tie_length,
               tie_width: tie_width,tie_spacing: tie_spacing}
     }
+    /// Is the layer visible?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ Visiblity flag
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    /// Is frozen?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ frozen flag
+    pub fn IsFrozenP(&self) -> bool {self.frozen}
+    /// Is On Map?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ on map flag
+    pub fn IsOnMapP(&self) -> bool {self.on_map}
+    /// Layer color
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ layer's color
+    pub fn Color(&self) -> u32 {self.color_rgb}
+    /// Module
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ layer's module
+    pub fn Module(&self) -> u32 {self.module}
+    /// Don't use color?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ layer's Don't use color flag
+    pub fn DontUseColotP(&self) -> bool {self.dont_use_color}
+    /// Color Flags
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ layer's Color Flags
+    pub fn ColorFlags(&self) -> u32 {self.color_flags}
+    /// Is button off?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ Is layer's button off?
+    pub fn IsButtonOffP(&self) -> bool {self.button_off}
+    /// Layer name
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ layer's name
+    pub fn Name(&self) -> String {self.name.clone()}
+    /// Inherit?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's inherit flag
+    pub fn InheritP(&self) -> bool {self.inherit}
+    /// Scale Index
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ The layer's scale index
+    pub fn ScaleIndex(&self) -> u32 {self.scale_index}
+    /// Minimum track radius
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's minimum track radius
+    pub fn MinimumTrackRadius(&self) -> f64 {self.min_track_radius}
+    /// Maximum Track Grade
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's maximum track grade 
+    pub fn MaximumTrackGrade(&self) -> f64 {self.max_track_grade}
+    /// Tie Length
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's tie length
+    pub fn TieLength(&self) -> f64 {self.tie_length}
+    /// Tie Width
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's tie width
+    pub fn TieWidth(&self) -> f64 {self.tie_width}
+    /// Tie spacing
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer's tie spacing
+    pub fn TieSPacing(&self) -> f64 {self.tie_spacing}
+
 }
 
 /// Structure struct
@@ -786,31 +894,115 @@ pub struct Structure {
     structbody: StructureBody,
 }
 
+impl fmt::Display for Structure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tabOpt = self.textfields.find('\t');
+        let name = match tabOpt {
+            None => self.textfields.clone(),
+            Some(tab) => self.textfields[0..tab].to_string(),
+        };
+        write!(f, "<#Structure {}>", name)
+    }
+}
 impl Structure {
     /// Initialize a Structure element
     /// ## Parameters:
-    /// - layer
-    /// - lineType
-    /// - scale
-    /// - visible
-    /// - origx
-    /// - origy
-    /// - elev
-    /// - angle
-    /// - textfields
-    /// - adjopt
-    /// - pieropt
-    /// - structbody
+    /// - layer The layer the Structure is on
+    /// - lineType The line type: 0=solid, 1=dashed, 2=dots, 3=dash-dot, 4=dash-dot-dot
+    /// - scale The model scale
+    /// - visible Is it visible
+    /// - origx The X origin
+    /// - origy The Y origin
+    /// - elev The elevation
+    /// - angle The angle
+    /// - textfields The text fields
+    /// - adjopt The optional adjustments
+    /// - pieropt The optional Peirs
+    /// - structbody The body of the structure
+    ///
+    /// __Returns__ an initialized Structure
     pub fn new(layer: u32, lineType: u32, scale: Scale, visible: bool, 
                origx: f64, origy: f64, elev: u32, angle: f64, 
                textfields: String, adjopt: Option<(f64, f64)>, 
                pieropt: Option<(f64, String)>, structbody: StructureBody) 
                 -> Self {
-        Self { layer: layer, lineType: lineType, scale: scale, 
+         Self { layer: layer, lineType: lineType, scale: scale, 
                visible: visible, origx: origx, origy: origy, elev: elev, 
                angle: angle, textfields: textfields, adjopt: adjopt, 
                pieropt: pieropt, structbody: structbody }
     }
+    /// The layer
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer index
+    pub fn Layer(&self) -> u32 {self.layer}
+    /// The line type
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the line type
+    pub fn LineType(&self) -> u32 {self.lineType}
+    /// The model scale
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the model scale
+    pub fn Scale(&self) -> Scale {self.scale}
+    /// Is the structure visible?
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the the structure's visibility
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    /// The X origin
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the X origin
+    pub fn XOrigin(&self) -> f64 {self.origx}
+    /// The Y origin
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Y origin
+    pub fn YOrigin(&self) -> f64 {self.origy}
+    /// The elevation
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Elevation
+    pub fn Elevation(&self) -> u32 {self.elev}
+    /// The angle
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the angle
+    pub fn Angle(&self) -> f64 {self.angle}
+    /// The textfields
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the text fields
+    pub fn TextFields(&self) -> String {self.textfields.clone()}
+    /// The optional Adjustable Options
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the optional Adjustable Options
+    pub fn AdjustableOptions(&self) -> Option<(f64, f64)> {self.adjopt}
+    /// The optional pier options
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the optional Pier Options
+    pub fn PeirOptions(&self) -> Option<(f64, String)> {self.pieropt.clone()}
+    /// The structure body
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the structure body
+    pub fn StructureBody(&self) -> StructureBody {self.structbody.clone()}
 }
 
 /// Drawing struct
@@ -825,16 +1017,22 @@ pub struct Drawing {
     segments: StructureBody,
 }
 
+impl fmt::Display for Drawing {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Drawing>")
+    }
+}
+
 impl Drawing {
     /// Initialize a new Drawing struct
     /// ## Parameters:
-    /// - layer 
-    /// - lineType 
-    /// - start_x 
-    /// - start_y 
-    /// - start 
-    /// - angle 
-    /// - segments
+    /// - layer The layer the drawing is on
+    /// - lineType The line type 
+    /// - start_x Starting X
+    /// - start_y Starting Y 
+    /// - start Start?  
+    /// - angle Angle
+    /// - segments body segments 
     ///
     /// __Returns__ an initialized Drawing struct
     pub fn new(layer: u32, lineType: u32, start_x: f64, start_y: f64, 
@@ -842,6 +1040,49 @@ impl Drawing {
         Self {layer: layer, lineType: lineType, start_x: start_x, 
               start_y: start_y, start: start, angle: angle, segments: segments}
     }
+    /// The layer
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer index
+    pub fn Layer(&self) -> u32 {self.layer}
+    /// The Line Type
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Line Type 
+    pub fn LineType(&self) -> u32 {self.lineType}
+    /// The Start X
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Start X
+    pub fn StartX(&self) -> f64 {self.start_x}
+    /// The Start Y
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Start Y
+    pub fn StartY(&self) -> f64 {self.start_y}
+    /// The Start
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Start
+    pub fn Start(&self) -> u32 {self.start}
+    /// The Angle
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Angle
+    pub fn Angle(&self) -> f64 {self.angle}
+    /// The Segments
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the Segments
+    pub fn Segments(&self) -> StructureBody {self.segments.clone()}
+
 }
 
 /// BZRLine struct
@@ -851,16 +1092,16 @@ pub struct BZRLine {
     line_width: u32, 
     scale: Scale, 
     visible: bool,
-    X1: f64,
-    Y1: f64,
-    X2: f64,
-    Y2: f64,
-    X3: f64,
-    Y3: f64,
-    X4: f64,
-    Y4: f64,
-    desc_X: f64,
-    desc_Y: f64,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+    x3: f64,
+    y3: f64,
+    x4: f64,
+    y4: f64,
+    desc_x: f64,
+    desc_y: f64,
     body: BZRLineBody,
 }
 
@@ -889,8 +1130,8 @@ impl BZRLine {
                X4: f64, Y4: f64, desc_X: f64, desc_Y: f64, body: BZRLineBody)
             -> Self {
         Self {layer: layer, line_width: line_width, scale: scale, 
-              visible: visible, X1: X1, Y1: Y1, X2: X2, Y2: Y2, X3: X3, Y3: Y3,
-              X4: X4, Y4: Y4, desc_X: desc_X, desc_Y: desc_Y, body: body}
+              visible: visible, x1: X1, y1: Y1, x2: X2, y2: Y2, x3: X3, y3: Y3,
+              x4: X4, y4: Y4, desc_x: desc_X, desc_y: desc_Y, body: body}
     }
 }
 
@@ -957,12 +1198,12 @@ pub struct Curve {
     line_width: u32, 
     scale: Scale, 
     flags: u32, 
-    center_X: f64, 
-    centerY: f64, 
+    center_x: f64, 
+    centery: f64, 
     radius: f64, 
     helix_turns: u32, 
-    desc_X: f64, 
-    desc_Y: f64, 
+    desc_x: f64, 
+    desc_y: f64, 
     trackbody: TrackBody, 
 }
 
@@ -986,30 +1227,30 @@ impl Curve {
                center_X: f64, centerY: f64, radius: f64, helix_turns: u32, 
                desc_X: f64, desc_Y: f64, trackbody: TrackBody) -> Self {
         Self {layer: layer, line_width: line_width, scale: scale, 
-              flags: flags, center_X: center_X, centerY: centerY, 
-              radius: radius, helix_turns: helix_turns, desc_X: desc_X, 
-              desc_Y: desc_Y, trackbody: trackbody}
+              flags: flags, center_x: center_X, centery: centerY, 
+              radius: radius, helix_turns: helix_turns, desc_x: desc_X, 
+              desc_y: desc_Y, trackbody: trackbody}
     }
 }
 
 /// Bezier curve track struct 
-#[derive(Debug, Clone, PartialEq)]                                              
+#[derive(Debug, Clone, PartialEq)]
 pub struct Bezier {
     layer: u32, 
     width: u32, 
     color: u32, 
     scale: Scale, 
     visible: bool, 
-    X1: f64, 
-    Y1: f64, 
-    X2: f64, 
-    Y2: f64, 
-    X3: f64, 
-    Y3: f64, 
-    X4: f64, 
-    Y4: f64, 
-    desc_X: f64, 
-    desc_Y: f64, 
+    x1: f64, 
+    y1: f64, 
+    x2: f64, 
+    y2: f64, 
+    x3: f64, 
+    y3: f64, 
+    x4: f64, 
+    y4: f64, 
+    desc_x: f64, 
+    desc_y: f64, 
     body: BezierBody, 
 }
 
@@ -1038,8 +1279,8 @@ impl Bezier {
                 X1: f64, Y1: f64, X2: f64, Y2: f64, X3: f64, Y3: f64, 
                 X4: f64, Y4: f64, desc_X: f64, desc_Y: f64, body: BezierBody) -> Self {
         Self {layer: layer, width: width, color: color, scale: scale, 
-              visible: visible, X1: X1, Y1: Y1, X2: X2, Y2: Y2, X3: X3, 
-              Y3: Y3, X4: X4, Y4: Y4, desc_X: desc_X, desc_Y: desc_Y, 
+              visible: visible, x1: X1, y1: Y1, x2: X2, y2: Y2, x3: X3, 
+              y3: Y3, x4: X4, y4: Y4, desc_x: desc_X, desc_y: desc_Y, 
               body: body }
 
     }
@@ -1053,8 +1294,8 @@ pub struct Straight {
     line_width: u32, 
     scale: Scale, 
     flags: u32, 
-    Desc_x: f64, 
-    Desc_y: f64, 
+    desc_x: f64, 
+    desc_y: f64, 
     body: TrackBody,
 }
 
@@ -1068,8 +1309,10 @@ impl Straight {
     /// - Desc_x
     /// - Desc_y
     /// - body
-    pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, Desc_x: f64, Desc_y: f64, body: TrackBody) -> Self {
-        Self { layer: layer, line_width: line_width, scale: scale, flags: flags, Desc_x: Desc_x, Desc_y: Desc_y, body: body }
+    pub fn new(layer: u32, line_width: u32, scale: Scale, flags: u32, 
+                Desc_x: f64, Desc_y: f64, body: TrackBody) -> Self {
+        Self { layer: layer, line_width: line_width, scale: scale, 
+                flags: flags, desc_x: Desc_x, desc_y: Desc_y, body: body }
     }
 }
 
@@ -1162,10 +1405,10 @@ pub struct Joint {
     flags: u32,
     l0: f64, 
     l1: f64, 
-    R: f64, 
+    r: f64, 
     flip: u32, 
     negate: u32,
-    S_curve: u32, 
+    s_curve: u32, 
     x: f64, 
     y: f64,
     angle: f64,
@@ -1200,8 +1443,8 @@ impl Joint {
                 x: f64, y: f64, angle: f64, desc_x: f64, desc_y: f64, 
                 body: TrackBody) -> Self {
         Self {layer: layer, width: width, scale: scale, flags: flags, 
-              l0: l0, l1: l1, R: R, flip: flip, negate: negate,
-              S_curve: S_curve, x: x, y: y, angle: angle, desc_x: desc_x, 
+              l0: l0, l1: l1, r: R, flip: flip, negate: negate,
+              s_curve: S_curve, x: x, y: y, angle: angle, desc_x: desc_x, 
               desc_y: desc_y, body: body}
     }
 }
@@ -1300,7 +1543,7 @@ impl Note {
     }
 }
 
-/// A test item
+/// A text item
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextItem {
     layer: u32, 
@@ -1386,9 +1629,9 @@ pub struct Signal {
     layer: u32, 
     scale: Scale,
     visible: bool,
-    X: f64, 
-    Y: f64, 
-    A: f64, 
+    x: f64, 
+    y: f64, 
+    a: f64, 
     numheads: u32,
     name: String, 
     aspectlist: AspectList,
@@ -1410,7 +1653,7 @@ impl Signal {
     /// __Returns__ An initiaized Signal
     pub fn new(layer: u32, scale: Scale, visible: bool, X: f64, Y: f64, A: f64,
                numheads: u32, name: String, aspectlist: AspectList) -> Self {
-        Self {layer: layer, scale: scale, visible: visible, X: X, Y: Y, A: A, 
+        Self {layer: layer, scale: scale, visible: visible, x: X, y: Y, a: A, 
               numheads: numheads, name: name, aspectlist: aspectlist,}
     }
 }
@@ -1421,8 +1664,8 @@ pub struct Sensor {
     layer: u32,
     scale: Scale,
     visible: bool,
-    X: f64,
-    Y: f64,
+    x: f64,
+    y: f64,
     name: String,
     script: String,
 }
@@ -1441,7 +1684,7 @@ impl Sensor {
     /// __Returns__ an initialized Sensor
     pub fn new(layer: u32, scale: Scale, visible: bool, X: f64, Y: f64, 
                 name: String, script: String) -> Self {
-        Self {layer: layer, scale: scale, visible: visible, X: X, Y: Y, 
+        Self {layer: layer, scale: scale, visible: visible, x: X, y: Y, 
                 name: name, script: script,}
     }
 }
@@ -1515,6 +1758,16 @@ pub struct Layout {
     controls: HashMap<u32,Control>,
 }
 
+impl fmt::Display for Layout {
+    /// Display a Layout
+    /// ## Parameters:
+    /// - f formatter to write to
+    ///
+    /// __Returns__ a fmt::Result
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Layout {}>", self.title1)
+    }
+}
 
 impl Layout {
     /// Layout initializer.
@@ -1687,16 +1940,16 @@ impl Layout {
     }
     /// Add a drawing
     /// ## Parameters:
-    /// - index 
-    /// - layer 
-    /// - lineType 
-    /// - pad1 
-    /// - pad2 
-    /// - start_x 
-    /// - start_y 
-    /// - start
-    /// - angle 
-    /// - segments
+    /// - index The drawing index
+    /// - layer The layer the drawing is on
+    /// - lineType The line type
+    /// - pad1 unused
+    /// - pad2 unused
+    /// - start_x Starting X
+    /// - start_y Starting Y
+    /// - start Start?
+    /// - angle Angle
+    /// - segments body segments
     ///
     /// __Returns__ nothing
     pub fn AddDrawing(&mut self,index: u32, layer: u32, lineType: u32,
@@ -1940,7 +2193,33 @@ impl Layout {
     }
     /// Add a car
     /// ## Parameters:
-    /// inx: u32, scale: Scale, title: String, options: u32, typeofcar: u32, length: f64, width: f64, pad0: u32, truck_center_offset: u32, truck_center: f64, coupled_length: f64, color: u32, puchaseprice: f64, currentprice: f64, condition: u32, purchdate: u32, servdate: u32, pad1: u32, pad2: u32, pad3: u32, pad4: u32, pad5: u32, pad6: u32, notes: String, onlayout: Option<CarAux>, 
+    /// - inx
+    /// - scale
+    /// - title
+    /// - options
+    /// - typeofcar
+    /// - length
+    /// - width
+    /// - pad0
+    /// - truck_center_offset
+    /// - truck_center
+    /// - coupled_length
+    /// - color
+    /// - puchaseprice
+    /// - currentprice
+    /// - condition
+    /// - purchdate
+    /// - servdate
+    /// - pad1
+    /// - pad2
+    /// - pad3
+    /// - pad4
+    /// - pad5
+    /// - pad6
+    /// - notes
+    /// - onlayout
+    ///
+    /// __Returns__ nothing
     pub fn AddCar(&mut self,inx: u32, scale: Scale, title: String, 
                   options: u32, typeofcar: u32, length: f64, width: f64, 
                   pad0: u32,truck_center_offset: u32, truck_center: f64, 
@@ -2086,6 +2365,478 @@ impl Layout {
                                                 on_script.clone(),
                                                 off_script.clone()));
     }
+    /// Return the layout filename
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout filename
+    pub fn Filename(&self) -> String {self.filename.clone()}
+    /// Return the layout file version
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout file version
+    pub fn FileVersion(&self) -> u32 {self.file_version}
+    /// Return the layout program version
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout program version
+    pub fn ProgramVersion(&self) -> (u32,u32,u32) {self.program_version}
+    /// Return the layout main title
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout main title
+    pub fn Title(&self) -> String {self.title1.clone()}
+    /// Return the layout subtitle
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout subtitle
+    pub fn SubTitle(&self) -> String {self.title2.clone()}
+    /// Return the layout map scale
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout filename
+    pub fn MapScale(&self) -> u32 {self.mapscale}
+    /// Return the layout room size
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout room size
+    pub fn RoomSize(&self) -> (f64,f64) {self.roomsize}
+    /// Return the layout scale
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout scale
+    pub fn Scale(&self) -> Scale {self.scale}
+    /// Return the layout's layer indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layer indexes
+    pub fn LayerIndexes(&self) -> Vec<&u32> {
+        self.layers.keys().collect()
+    }
+    /// Return a layout layer
+    /// ## Parameters:
+    /// - i the layer number
+    ///
+    /// __Returns__ the layout's ith layer 
+    pub fn Layer(&self, i: u32) -> Option<&Layer> {self.layers.get(&i)}
+    /// Return a layer iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the layers
+    pub fn LayerIter(&self) -> impl Iterator<Item = (&u32, &Layer)> {
+        self.layers.iter()
+    } 
+    /// Return the current layer
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the current layer
+    pub fn CurrentLayerNumber(&self) -> u32 {self.current_layer}
+    /// Return the layout's structure indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's structure indexes 
+    pub fn StructureIndexes(&self) -> Vec<&u32> {
+        self.structures.keys().collect()
+    }
+    /// Return a layout Structure
+    /// ## Parameters:
+    /// - i the Structure number
+    ///
+    /// __Returns__ the layout's ith Structure 
+    pub fn Structure(&self, i: u32) -> Option<&Structure> {self.structures.get(&i)}
+    /// Return a structures iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the structures
+    pub fn StructureIter(&self) -> impl Iterator<Item = (&u32, &Structure)> {
+        self.structures.iter()
+    } 
+    /// Return the layout's drawing indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's drawing indexes 
+    pub fn DrawingIndexes(&self) -> Vec<&u32> {
+        self.drawings.keys().collect()
+    }
+    /// Return a layout Drawing
+    /// ## Parameters:
+    /// - i the Drawing number
+    ///
+    /// __Returns__ the layout's ith Drawing 
+    pub fn Drawing(&self, i: u32) -> Option<&Drawing> {self.drawings.get(&i)}
+    /// Return a drawings iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the drawings
+    pub fn DrawingIter(&self) -> impl Iterator<Item = (&u32, &Drawing)> {
+        self.drawings.iter()
+    } 
+    /// Return the layout's bzrline indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's bzrline indexes 
+    pub fn BZRLineIndexes(&self) -> Vec<&u32> {
+        self.bzrlines.keys().collect()
+    }
+    /// Return a layout BZRLine
+    /// ## Parameters:
+    /// - i the BZRLine number
+    ///
+    /// __Returns__ the layout's ith BZRLine 
+    pub fn BZRLine(&self, i: u32) -> Option<&BZRLine> {self.bzrlines.get(&i)}
+    /// Return a bzrlines iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the structures
+    pub fn bzrlineIter(&self) -> impl Iterator<Item = (&u32, &BZRLine)> {
+        self.bzrlines.iter()
+    } 
+    /// Return the layout's cornu indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's cornu indexes 
+    pub fn CornuIndexes(&self) -> Vec<&u32> {
+        self.cornus.keys().collect()
+    }
+    /// Return a layout Cornu
+    /// ## Parameters:
+    /// - i the Cornu number
+    ///
+    /// __Returns__ the layout's ith Cornu 
+    pub fn Cornu(&self, i: u32) -> Option<&Cornu> {self.cornus.get(&i)}
+    /// Return a cornus iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the cornus
+    pub fn CornuIter(&self) -> impl Iterator<Item = (&u32, &Cornu)> {
+        self.cornus.iter()
+    } 
+    /// Return the layout's curve indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's curve indexes 
+    pub fn CurveIndexes(&self) -> Vec<&u32> {
+        self.curves.keys().collect()
+    }
+    /// Return a layout Curve
+    /// ## Parameters:
+    /// - i the Curve number
+    ///
+    /// __Returns__ the layout's ith Curve 
+    pub fn Curve(&self, i: u32) -> Option<&Curve> {self.curves.get(&i)}
+    /// Return a curves iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the curves
+    pub fn CurveIter(&self) -> impl Iterator<Item = (&u32, &Curve)> {
+        self.curves.iter()
+    } 
+    /// Return the layout's bezier indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's bezier indexes 
+    pub fn BezierIndexes(&self) -> Vec<&u32> {
+        self.beziers.keys().collect()
+    }
+    /// Return a layout Bezier
+    /// ## Parameters:
+    /// - i the Bezier number
+    ///
+    /// __Returns__ the layout's ith Bezier 
+    pub fn Bezier(&self, i: u32) -> Option<&Bezier> {self.beziers.get(&i)}
+    /// Return a beziers iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the beziers
+    pub fn BezierIter(&self) -> impl Iterator<Item = (&u32, &Bezier)> {
+        self.beziers.iter()
+    } 
+    /// Return the layout's straight indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's straight indexes 
+    pub fn StraightIndexes(&self) -> Vec<&u32> {
+        self.straights.keys().collect()
+    }
+    /// Return a layout Straight
+    /// ## Parameters:
+    /// - i the Straight number
+    ///
+    /// __Returns__ the layout's ith Straight 
+    pub fn Straight(&self, i: u32) -> Option<&Straight> {self.straights.get(&i)}
+    /// Return a straights iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the straights
+    pub fn StraightIter(&self) -> impl Iterator<Item = (&u32, &Straight)> {
+        self.straights.iter()
+    } 
+    /// Return the layout's turnout indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's turnout indexes 
+    pub fn TurnoutIndexes(&self) -> Vec<&u32> {
+        self.turnouts.keys().collect()
+    }
+    /// Return a layout Turnout
+    /// ## Parameters:
+    /// - i the Turnout number
+    ///
+    /// __Returns__ the layout's ith Turnout 
+    pub fn Turnout(&self, i: u32) -> Option<&Turnout> {self.turnouts.get(&i)}
+    /// Return a turnouts iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the turnouts
+    pub fn TurnoutIter(&self) -> impl Iterator<Item = (&u32, &Turnout)> {
+        self.turnouts.iter()
+    } 
+    /// Return the layout's turntable indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's turntable indexes 
+    pub fn TurntableIndexes(&self) -> Vec<&u32> {
+        self.turntables.keys().collect()
+    }
+    /// Return a layout Turntable
+    /// ## Parameters:
+    /// - i the Turntable number
+    ///
+    /// __Returns__ the layout's ith Turntable 
+    pub fn Turntable(&self, i: u32) -> Option<&Turntable> {self.turntables.get(&i)}
+    /// Return a turntables iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the turntables
+    pub fn TurntableIter(&self) -> impl Iterator<Item = (&u32, &Turntable)> {
+        self.turntables.iter()
+    } 
+    /// Return the layout's joint indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's joint indexes 
+    pub fn JointIndexes(&self) -> Vec<&u32> {
+        self.joints.keys().collect()
+    }
+    /// Return a layout Joint
+    /// ## Parameters:
+    /// - i the Joint number
+    ///
+    /// __Returns__ the layout's ith Joint 
+    pub fn Joint(&self, i: u32) -> Option<&Joint> {self.joints.get(&i)}
+    /// Return a joints iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the joints
+    pub fn JointIter(&self) -> impl Iterator<Item = (&u32, &Joint)> {
+        self.joints.iter()
+    } 
+    /// Return the layout's car indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's car indexes 
+    pub fn CarIndexes(&self) -> Vec<&u32> {
+        self.cars.keys().collect()
+    }
+    /// Return a layout Car
+    /// ## Parameters:
+    /// - i the Car number
+    ///
+    /// __Returns__ the layout's ith Car 
+    pub fn Car(&self, i: u32) -> Option<&Car> {self.cars.get(&i)}
+    /// Return a cars iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the cars
+    pub fn CarIter(&self) -> impl Iterator<Item = (&u32, &Car)> {
+        self.cars.iter()
+    } 
+    /// Return the layout's note indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's note indexes 
+    pub fn NoteIndexes(&self) -> Vec<&u32> {
+        self.notes.keys().collect()
+    }
+    /// Return a layout Note
+    /// ## Parameters:
+    /// - i the Note number
+    ///
+    /// __Returns__ the layout's ith Note 
+    pub fn Note(&self, i: u32) -> Option<&Note> {self.notes.get(&i)}
+    /// Return a notes iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the notes
+    pub fn NoteIter(&self) -> impl Iterator<Item = (&u32, &Note)> {
+        self.notes.iter()
+    } 
+    /// Return the layout's textitem indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's textitem indexes 
+    pub fn TextItemIndexes(&self) -> Vec<&u32> {
+        self.textitems.keys().collect()
+    }
+    /// Return a layout TextItem
+    /// ## Parameters:
+    /// - i the TextItem number
+    ///
+    /// __Returns__ the layout's ith TextItem 
+    pub fn TextItem(&self, i: u32) -> Option<&TextItem> {self.textitems.get(&i)}
+    /// Return a textitems iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the textitems
+    pub fn TextItemIter(&self) -> impl Iterator<Item = (&u32, &TextItem)> {
+        self.textitems.iter()
+    } 
+    /// Return the layout's block indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's block indexes 
+    pub fn BlockIndexes(&self) -> Vec<&u32> {
+        self.blocks.keys().collect()
+    }
+    /// Return a layout Block
+    /// ## Parameters:
+    /// - i the Block number
+    ///
+    /// __Returns__ the layout's ith Block 
+    pub fn Block(&self, i: u32) -> Option<&Block> {self.blocks.get(&i)}
+    /// Return a blocks iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the blocks
+    pub fn BlockIter(&self) -> impl Iterator<Item = (&u32, &Block)> {
+        self.blocks.iter()
+    } 
+    /// Return the layout's switchmotor indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's switchmotor indexes 
+    pub fn SwitchMotorIndexes(&self) -> Vec<&u32> {
+        self.switchmotors.keys().collect()
+    }
+    /// Return a layout SwitchMotor
+    /// ## Parameters:
+    /// - i the SwitchMotor number
+    ///
+    /// __Returns__ the layout's ith SwitchMotor 
+    pub fn SwitchMotor(&self, i: u32) -> Option<&SwitchMotor> {self.switchmotors.get(&i)}
+    /// Return a switchmotors iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the switchmotors
+    pub fn SwitchMotorIter(&self) -> impl Iterator<Item = (&u32, &SwitchMotor)> {
+        self.switchmotors.iter()
+    } 
+    /// Return the layout's signal indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's signal indexes 
+    pub fn SignalIndexes(&self) -> Vec<&u32> {
+        self.signals.keys().collect()
+    }
+    /// Return a layout Signal
+    /// ## Parameters:
+    /// - i the Signal number
+    ///
+    /// __Returns__ the layout's ith Signal 
+    pub fn Signal(&self, i: u32) -> Option<&Signal> {self.signals.get(&i)}
+    /// Return a signals iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the signals
+    pub fn SignalIter(&self) -> impl Iterator<Item = (&u32, &Signal)> {
+        self.signals.iter()
+    } 
+    /// Return the layout's sensor indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's sensor indexes 
+    pub fn SensorIndexes(&self) -> Vec<&u32> {
+        self.sensors.keys().collect()
+    }
+    /// Return a layout Sensor
+    /// ## Parameters:
+    /// - i the Sensor number
+    ///
+    /// __Returns__ the layout's ith Sensor 
+    pub fn Sensor(&self, i: u32) -> Option<&Sensor> {self.sensors.get(&i)}
+    /// Return a sensors iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the sensors
+    pub fn SensorIter(&self) -> impl Iterator<Item = (&u32, &Sensor)> {
+        self.sensors.iter()
+    } 
+    /// Return the layout's control indexes
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the layout's control indexes 
+    pub fn ControlIndexes(&self) -> Vec<&u32> {
+        self.controls.keys().collect()
+    }
+    /// Return a layout Control
+    /// ## Parameters:
+    /// - i the Control number
+    ///
+    /// __Returns__ the layout's ith Control 
+    pub fn Control(&self, i: u32) -> Option<&Control> {self.controls.get(&i)}
+    /// Return a controls iter
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ a Iterator into the controls
+    pub fn ControlIter(&self) -> impl Iterator<Item = (&u32, &Control)> {
+        self.controls.iter()
+    } 
 }
 
 /// Standard scales
@@ -2168,7 +2919,7 @@ pub struct FBlockElement(f64,f64,u32);
 /// A FBlock liist
 #[derive(Debug, PartialEq, Clone)]
 pub struct FBlock {
-    elememts: Vec<FBlockElement>
+    elements: Vec<FBlockElement>
 }
 
 impl FBlock {
@@ -2179,7 +2930,7 @@ impl FBlock {
     /// __Returns__ an initialized and empty FBlock
     pub fn new() -> Self {
         //eprintln!("*** FBlock::new()");
-        Self{ elememts: Vec::new()}
+        Self{ elements: Vec::new()}
     }
     /// Add a new FBlock element
     /// ## Parameters:
@@ -2189,7 +2940,7 @@ impl FBlock {
     /// __Returns__ the updated FBlock list
     pub fn Append(e: FBlockElement, mut b: FBlock) -> Self {
         //eprintln!("*** FBlock::Append({:?},{:?})",e,b);
-        b.elememts.insert(0,e);
+        b.elements.insert(0,e);
         b
     }
 }
@@ -2213,7 +2964,13 @@ pub enum StructureBodyElement {
 /// A list of Structure Body Elements
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct StructureBody {
-    elememts: Vec<StructureBodyElement>,
+    elements: Vec<StructureBodyElement>,
+}
+
+impl fmt::Display for StructureBody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#StructureBody {} elements>", self.elements.len())
+    }
 }
 
 impl StructureBody {
@@ -2224,7 +2981,7 @@ impl StructureBody {
     /// __Returns__ an empty StructureBody
     pub fn new() -> Self {
         //eprintln!("*** StructureBody::new()");
-        Self {elememts: Vec::new()}
+        Self {elements: Vec::new()}
     }
     /// Add an element to a StructureBody
     /// ## Parameters:
@@ -2234,9 +2991,20 @@ impl StructureBody {
     /// __Returns__ the updated body
     pub fn Append(e: StructureBodyElement, mut b: StructureBody) -> Self {
         //eprintln!("*** StructureBody::Append({:?},{:?})",e,b);
-        b.elememts.insert(0,e);
+        b.elements.insert(0,e);
         b
     }
+    /// The number of body elements
+    /// ## Parameters:
+    /// None
+    ///
+    /// __Returns__ the number of elements
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for StructureBody {
+    type Output = StructureBodyElement;
+    fn index(&self, i: usize) -> &StructureBodyElement {&self.elements[i]}
 }
 
 /// A BZRLineBody Struct
