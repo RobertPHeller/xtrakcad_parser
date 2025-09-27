@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250927.1112>
+//  Last Modified : <250927.1525>
 //
 //  Description	
 //
@@ -1515,22 +1515,28 @@ pub struct Turnout {
     body: TurnoutBody,
 }
 
+impl fmt::Display for Turnout {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Turnout {}>",self.tablist)
+    }
+}
+
 impl Turnout {
     /// Initialize a new turnout
     /// ## Parameters:
-    /// - layer
-    /// - options
-    /// - postion
-    /// - scale
-    /// - flags
-    /// - origx
-    /// - origy
-    /// - elev
-    /// - angle
-    /// - tablist
-    /// - adjopt
-    /// - pieropt
-    /// - body
+    /// - layer the layer the turnout is on
+    /// - options its options
+    /// - postion the position of the points
+    /// - scale the model scale
+    /// - flags its flags
+    /// - origx org X
+    /// - origy org Y
+    /// - elev elevation
+    /// - angle its angle
+    /// - tablist tab separated list of strings
+    /// - adjopt optional adjustments
+    /// - pieropt optiona pier
+    /// - body its body (track ends. etc.)
     ///
     /// __Returns__ a fresh new Turnout struct
     pub fn new(layer: u32, options: u32, postion: u32, scale: Scale, 
@@ -1542,6 +1548,19 @@ impl Turnout {
               angle: angle, tablist: tablist, adjopt: adjopt,
               pieropt: pieropt, body: body}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Options(&self) -> u32 {self.options}
+    pub fn Postion(&self) -> u32 {self.postion}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Flags(&self) -> u32 {self.flags}
+    pub fn OrigX(&self) -> f64 {self.origx}
+    pub fn OrigY(&self) -> f64 {self.origy}
+    pub fn Elev(&self) -> u32 {self.elev}
+    pub fn Angle(&self) -> f64 {self.angle}
+    pub fn Tablist(&self) -> String {self.tablist.clone()}
+    pub fn AdjOpt(&self) -> Option<(f64, f64)> {self.adjopt}
+    pub fn PierOpt(&self) -> Option<(f64, String)> {self.pieropt.clone()}
+    pub fn Body(&self) -> TurnoutBody {self.body.clone()}
 } 
 
 /// Turntable track struct
@@ -1557,17 +1576,23 @@ pub struct Turntable {
     body: TrackBody,
 }
 
+impl fmt::Display for Turntable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Turntable {},{},{}>",self.x,self.y,self.radius)
+    }
+}
+
 impl Turntable {
     /// Initialize a new Turntable
     /// ## Parameters:
-    /// - layer
-    /// - scale
-    /// - visible
-    /// - x
-    /// - y
-    /// - radius
-    /// - current_ep
-    /// - body
+    /// - layer the layer the turntable is on
+    /// - scale the model scale
+    /// - visible is it visible
+    /// - x X location
+    /// - y Y location
+    /// - radius radious
+    /// - current_ep current endpoint
+    /// - body the track ends
     ///
     /// __Returns__ a fresh Turntable
     pub fn new(layer:u32, scale: Scale, visible: bool, x: f64, y: f64, 
@@ -1575,6 +1600,14 @@ impl Turntable {
         Self {layer: layer, scale: scale, visible: visible, x: x, y: y, 
               radius: radius, current_ep: current_ep, body: body }
     }
+    pub fn Layer(&self) ->u32 {self.layer}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    pub fn X(&self) -> f64 {self.x}
+    pub fn Y(&self) -> f64 {self.y}
+    pub fn Radius(&self) -> f64 {self.radius}
+    pub fn CurrentEp(&self) -> Option<u32> {self.current_ep}
+    pub fn Body(&self) -> TrackBody {self.body.clone()}
 }
 
 /// Joint track struct
@@ -1598,14 +1631,21 @@ pub struct Joint {
     body: TrackBody,
 }
 
+impl fmt::Display for Joint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Joint {},{}>",self.x,self.y)
+    }
+}
+
+
 impl Joint {
     /// Initialize a new Joint
     /// ## Parameters:
-    /// - layer
-    /// - width
-    /// - scale
-    /// - flags
-    /// - l0
+    /// - layer the layer
+    /// - width the width
+    /// - scale the model scale
+    /// - flags the flags
+    /// - l0 
     /// - l1
     /// - R
     /// - flip
@@ -1616,7 +1656,7 @@ impl Joint {
     /// - angle
     /// - desc_x
     /// - desc_y
-    /// - body
+    /// - body the track ends
     ///
     /// __Returns__ a newly initialized Joint struct
     pub fn new(layer: u32, width: u32, scale: Scale, flags: u32, l0: f64, 
@@ -1628,10 +1668,26 @@ impl Joint {
               s_curve: S_curve, x: x, y: y, angle: angle, desc_x: desc_x, 
               desc_y: desc_y, body: body}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Width(&self) -> u32 {self.width}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Flags(&self) -> u32 {self.flags}
+    pub fn L0(&self) -> f64 {self.l0}
+    pub fn L1(&self) -> f64 {self.l1}
+    pub fn R(&self) -> f64 {self.r}
+    pub fn Flip(&self) -> u32 {self.flip}
+    pub fn Negate(&self) -> u32 {self.negate}
+    pub fn SCurve(&self) -> u32 {self.s_curve}
+    pub fn X(&self) -> f64 {self.x}
+    pub fn Y(&self) -> f64 {self.y}
+    pub fn Angle(&self) -> f64 {self.angle}
+    pub fn DescX(&self) -> f64 {self.desc_x}
+    pub fn DescY(&self) -> f64 {self.desc_y}
+    pub fn Body(&self) -> TrackBody {self.body.clone()}
 }
 
 /// Car struct
-#[derive(Debug, Clone, PartialEq)]                                              
+#[derive(Debug, Clone, PartialEq)]
 pub struct Car {
     scale: Scale, 
     title: String, 
@@ -1650,6 +1706,12 @@ pub struct Car {
     servdate: u32, 
     notes: String, 
     onlayout: Option<CarAux>, 
+}
+
+impl fmt::Display for Car {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Car {}>", self.title)
+    }
 }
 
 impl Car {
@@ -1689,6 +1751,23 @@ impl Car {
               purchdate: purchdate, servdate: servdate, notes: notes, 
               onlayout: onlayout}
     }
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn Title(&self) -> String {self.title.clone()}
+    pub fn Options(&self) -> u32 {self.options}
+    pub fn TypeOfCar(&self) -> u32 {self.typeofcar}
+    pub fn Length(&self) -> f64 {self.length}
+    pub fn Width(&self) -> f64 {self.width}
+    pub fn TruckCenterOffset(&self) -> u32 {self.truck_center_offset}
+    pub fn TruckCenter(&self) -> f64 {self.truck_center}
+    pub fn CoupledLength(&self) -> f64 {self.coupled_length}
+    pub fn Color(&self) -> u32 {self.color}
+    pub fn PuchasePrice(&self) -> f64 {self.puchaseprice}
+    pub fn CurrentPrice(&self) -> f64 {self.currentprice}
+    pub fn Condition(&self) -> u32 {self.condition}
+    pub fn PurchDate(&self) -> u32 {self.purchdate}
+    pub fn ServDate(&self) -> u32 {self.servdate}
+    pub fn Notes(&self) -> String {self.notes.clone()}
+    pub fn OnLayout(&self) -> Option<CarAux> {self.onlayout.clone()}
 }
 
 
@@ -1703,6 +1782,13 @@ pub struct Note {
     text1: String,  
     text2: Option<String>, 
 }
+
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Note {}>", self.text1)
+    }
+}
+
 
 impl Note {
     /// Initialize a new Note
@@ -1722,6 +1808,13 @@ impl Note {
               length: length, typeofnote: typeofnote, text1: text1, 
               text2: text2 }
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn StartX(&self) -> f64 {self.start_x}
+    pub fn StartY(&self) -> f64 {self.start_y}
+    pub fn Length(&self) -> u32 {self.length}
+    pub fn TypeOfNote(&self) -> u32 {self.typeofnote}
+    pub fn Text1(&self) -> String  {self.text1.clone()}
+    pub fn Text2(&self) -> Option<String> {self.text2.clone()}
 }
 
 /// A text item
@@ -1735,6 +1828,12 @@ pub struct TextItem {
     check_box: bool,
     text: String, 
     rotation: u32,
+}
+
+impl fmt::Display for TextItem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#TextItem {}>", self.text)
+    }
 }
 
 impl TextItem {
@@ -1754,6 +1853,14 @@ impl TextItem {
         Self {layer: layer, color: color, font_size: font_size, x: x, y: y, 
               check_box: check_box, text: text, rotation: rotation }
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Color(&self) -> u32 {self.color}
+    pub fn FontSize(&self) -> u32 {self.font_size}
+    pub fn X(&self) -> f64 {self.x}
+    pub fn Y(&self) -> f64 {self.y}
+    pub fn HasCheckBoxP(&self) -> bool {self.check_box}
+    pub fn Text(&self) -> String {self.text.clone()}
+    pub fn Rotation(&self) -> u32 {self.rotation}
 }
 
 /// A Block
@@ -1762,6 +1869,12 @@ pub struct Block {
     name: String, 
     script: String, 
     tracklist: IntegerList,
+}
+
+impl fmt::Display for Block {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Block {}>", self.name)
+    }
 }
 
 impl Block {
@@ -1775,6 +1888,9 @@ impl Block {
     pub fn new(name: String, script: String, tracklist: IntegerList) -> Self {
         Self{name: name, script: script, tracklist: tracklist, }
     }
+    pub fn Name(&self) -> String {self.name.clone()}
+    pub fn Script(&self) -> String {self.script.clone()}
+    pub fn Tracklist(&self) -> IntegerList {self.tracklist.clone()}
 }
 
 /// A switch motor control
@@ -1785,6 +1901,12 @@ pub struct SwitchMotor {
     normal: String,
     reverse: String,
     pointsense: String,
+}
+
+impl fmt::Display for SwitchMotor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#SwitchMotor {}>", self.name)
+    }
 }
 
 impl SwitchMotor {
@@ -1802,6 +1924,11 @@ impl SwitchMotor {
         Self {turnout: turnout, name: name, normal: normal, reverse: reverse, 
                 pointsense: pointsense,}
     }
+    pub fn Turnout(&self) -> u32 {self.turnout}
+    pub fn Name(&self) -> String {self.name.clone()}
+    pub fn Normal(&self) -> String {self.normal.clone()}
+    pub fn Reverse(&self) -> String {self.reverse.clone()}
+    pub fn Pointsense(&self) -> String {self.pointsense.clone()}
 }
 
 /// A signal
@@ -1816,6 +1943,12 @@ pub struct Signal {
     numheads: u32,
     name: String, 
     aspectlist: AspectList,
+}
+
+impl fmt::Display for Signal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Signal {}>",self.name)
+    }
 }
 
 impl Signal {
@@ -1837,6 +1970,15 @@ impl Signal {
         Self {layer: layer, scale: scale, visible: visible, x: X, y: Y, a: A, 
               numheads: numheads, name: name, aspectlist: aspectlist,}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    pub fn X(&self) -> f64 {self.x}
+    pub fn Y(&self) -> f64 {self.y}
+    pub fn A(&self) -> f64 {self.a}
+    pub fn Numheads(&self) -> u32 {self.numheads}
+    pub fn Name(&self) -> String {self.name.clone()}
+    pub fn Aspectlist(&self) -> AspectList {self.aspectlist.clone()}
 }
 
 /// A sensor
@@ -1849,6 +1991,12 @@ pub struct Sensor {
     y: f64,
     name: String,
     script: String,
+}
+
+impl fmt::Display for Sensor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Sensor {}>", self.name)
+    }
 }
 
 impl Sensor {
@@ -1868,6 +2016,13 @@ impl Sensor {
         Self {layer: layer, scale: scale, visible: visible, x: X, y: Y, 
                 name: name, script: script,}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    pub fn X(&self) -> f64 {self.x}
+    pub fn Y(&self) -> f64 {self.y}
+    pub fn Name(&self) -> String {self.name.clone()}
+    pub fn Script(&self) -> String {self.script.clone()}
 }
 
 /// A control
@@ -1881,6 +2036,12 @@ pub struct Control {
     name: String, 
     on_script: String, 
     off_script: String,
+}
+
+impl fmt::Display for Control {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#Control {}>",self.name)
+    }
 }
 
 impl Control {
@@ -1903,6 +2064,14 @@ impl Control {
                 start_y: start_y, name: name, on_script: on_script, 
                 off_script: off_script}
     }
+    pub fn Layer(&self) -> u32 {self.layer}
+    pub fn Scale(&self) -> Scale {self.scale}
+    pub fn IsVisibleP(&self) -> bool {self.visible}
+    pub fn StartX(&self) -> f64 {self.start_x}
+    pub fn StartY(&self) -> f64 {self.start_y}
+    pub fn Name(&self) -> String {self.name.clone()}
+    pub fn OnScript(&self) -> String {self.on_script.clone()}
+    pub fn OffScript(&self) -> String {self.off_script.clone()}
 }
 
 
@@ -3050,10 +3219,34 @@ pub enum BZSegment {
     C2(u32,u32,f64,f64,f64,f64,f64,f64,f64),
 }
 
+impl fmt::Display for BZSegment {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BZSegment::S1(a,b,c,d,e,f) => 
+                write!(fp,"<#BZSegment::S1({},{},{},{},{},{})>",a,b,c,d,e,f),
+            BZSegment::S2(a,b,c,d,e,f,g,h,i) =>
+                write!(fp,"<#BZSegment::S1({},{},{},{},{},{},{},{},{})>",
+                                            a,b,c,d,e,f,g,h,i),
+            BZSegment::C1(a,b,c,d,e,f,g) =>
+                write!(fp,"<#BZSegment::C1({},{},{},{},{},{},{})>",
+                                            a,b,c,d,e,f,g),
+            BZSegment::C2(a,b,c,d,e,f,g,h,i) => 
+                write!(fp,"<#BZSegment::C2({},{},{},{},{},{},{},{},{})>",
+                                           a,b,e,d,e,f,g,h,i),
+        }
+    }
+}
+
 /// BZSegments list struct
 #[derive(Debug, PartialEq, Clone)] 
 pub struct BZSegments {
     elements: Vec<BZSegment>,
+}
+
+impl fmt::Display for BZSegments {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(fp,"<#BZSegments {} elements>",self.elements.len())
+    }
 }
 
 impl BZSegments {
@@ -3075,8 +3268,13 @@ impl BZSegments {
         b.elements.insert(0,e);
         b
     }
+    pub fn len(&self) -> usize {self.elements.len()}
 }
 
+impl Index<usize> for BZSegments {
+    type Output = BZSegment;
+    fn index(&self, i: usize) -> &BZSegment {&self.elements[i]}
+}
 
 /// BZLSegments list.
 #[derive(Debug, PartialEq, Clone)]
@@ -3332,6 +3530,17 @@ impl Index<usize> for BZRLineBody {
 pub struct CornuBodyElement(u32,u32,f64,f64,f64,f64,f64,f64,f64,f64,f64,
                             BZSegments);
 
+
+impl fmt::Display for CornuBodyElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(fp,"<#CornuBodyElement {},{},{},{},{},{},{},{},{},{},{},{}>",
+            self.0,self.1,self.2,self.3,self.4,self.5,self.6,self.7,self.8,
+            self.9,self.10,self.11)
+    }
+}
+
+
+
 /// A Cornu body
 #[derive(Debug, Clone, PartialEq)]
 pub struct CornuBody {
@@ -3339,6 +3548,12 @@ pub struct CornuBody {
     trackelements: Vec<CornuBodyElement>,
 }
 
+impl fmt::Display for CornuBody {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(fp,"<#CornuBody {} elements>",
+            self.trackelements.len())
+    }
+}
 impl CornuBody {
     /// Initialize a Cornu body struct
     /// ## Parameters:
@@ -3368,6 +3583,14 @@ impl CornuBody {
         b.trackelements.insert(0,e);
         b
     }
+    pub fn TrackEndsLen(&self) -> usize {self.trackends.len()}
+    pub fn TrackEnd(&self, i: usize) -> &TrackBodyElement {&self.trackends[i]}
+    pub fn len(&self) -> usize {self.trackelements.len()}
+}
+
+impl Index<usize> for CornuBody {
+    type Output = CornuBodyElement;
+    fn index(&self, i: usize) -> &CornuBodyElement {&self.trackelements[i]}
 }
 
 /// A Float (f64) or String
@@ -3375,6 +3598,15 @@ impl CornuBody {
 pub enum FloatOrString {
     Float(f64),
     String(String),
+}
+
+impl fmt::Display for FloatOrString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FloatOrString::Float(flo) => write!(f,"{}",flo),
+            FloatOrString::String(s) => write!(f,"{}",s),
+        }
+    }
 }
 
 /// A track body element (track ends)
@@ -3386,6 +3618,29 @@ pub enum TrackBodyElement {
     E4(u32,f64,f64,f64,TrackBodySubElement),
 }
 
+impl fmt::Display for TrackBodyElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TrackBodyElement::T1(a,b,c,d,None) => 
+                write!(fp,"<#TrackBodyElement T1({},{},{},{})>",a,b,c,d),
+            TrackBodyElement::T1(a,b,c,d,Some(e)) => 
+                write!(fp,"<#TrackBodyElement T1({},{},{},{},{})>",
+                            a,b,c,d,e),
+            TrackBodyElement::T4(a,b,c,d,e,f) => 
+                write!(fp,"<#TrackBodyElement T4({},{},{},{},{},{})>",
+                                    a,b,c,d,e,f),
+            TrackBodyElement::E1(a,b,c,None) => 
+                write!(fp,"<#TrackBodyElement E1({},{},{})>",a,b,c),
+            TrackBodyElement::E1(a,b,c,Some(d)) => 
+                write!(fp,"<#TrackBodyElement E1({},{},{},{})>",a,b,c,d),
+            TrackBodyElement::E4(a,b,c,d,e) => 
+                write!(fp,"<#TrackBodyElement E4({},{},{},{},{})>",a,b,c,d,e),
+            
+        }
+    }
+}
+
+
 /// A track body sub element
 #[derive(Debug, Clone, PartialEq)]
 pub enum TrackBodySubElement {
@@ -3393,10 +3648,30 @@ pub enum TrackBodySubElement {
     T4(u32,f64,f64,FloatOrString,f64,u32,u32,u32,f64),
 }
 
+impl fmt::Display for TrackBodySubElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TrackBodySubElement::T1(a,b,c,None) =>
+                write!(fp,"<#TrackBodySubElement T1({},{},{})>",a,b,c),
+            TrackBodySubElement::T1(a,b,c,Some(d)) =>
+                write!(fp,"<#TrackBodySubElement T1({},{},{},{})>",a,b,c,d),
+            TrackBodySubElement::T4(a,b,c,d,e,f,g,h,i) =>
+                write!(fp,"<#TrackBodySubElement T4({},{},{},{},{},{},{},{},{})>",
+                        a,b,c,d,e,f,g,h,i),
+        }
+    }
+}
+
 /// A track body (conventual track)
 #[derive(Debug, Clone, PartialEq)]
 pub struct TrackBody {
     elements: Vec<TrackBodyElement>,
+}
+
+impl fmt::Display for TrackBody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#TrackBody {} elements>",self.elements.len())
+    }
 }
 
 impl TrackBody {
@@ -3418,12 +3693,24 @@ impl TrackBody {
         b.elements.insert(0,e);
         b
     }
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for TrackBody {
+    type Output = TrackBodyElement;
+    fn index(&self, i: usize) -> &TrackBodyElement {&self.elements[i]}
 }
 
 /// A Bezier Body
 #[derive(Debug, Clone, PartialEq)]
 pub struct BezierBody {
     elements: Vec<BezierBodyElement>,
+}
+
+impl fmt::Display for BezierBody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#BezierBody {} elements>", self.elements.len())
+    }
 }
 
 impl BezierBody {
@@ -3445,6 +3732,12 @@ impl BezierBody {
         b.elements.insert(0,e);
         b
     }
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for BezierBody {
+    type Output = BezierBodyElement;
+    fn index(&self, i: usize) -> &BezierBodyElement {&self.elements[i]}
 }
 
 /// Bezier Body elements
@@ -3458,6 +3751,40 @@ pub enum BezierBodyElement {
     T4(u32,u32,f64,f64,f64,TrackBodySubElement),
     E1(f64,f64,f64,Option<TrackBodySubElement>),
     E4(u32,f64,f64,f64,TrackBodySubElement),
+}
+
+impl fmt::Display for BezierBodyElement {
+    fn fmt(&self, fp: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BezierBodyElement::Curve1(a,b,c,d,e,f,g) =>
+                write!(fp,"<#BezierBodyElement Curve1({},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g),
+            BezierBodyElement::Curve2(a,b,c,d,e,f,g,h,i) =>
+                write!(fp,"<#BezierBodyElement Curve2({},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i),
+            BezierBodyElement::Straight1(a,b,c,d,e,f) =>
+                write!(fp,"<#BezierBodyElement Straight1({},{},{},{},{},{})>",
+                            a,b,c,d,e,f),
+            BezierBodyElement::Straight2(a,b,c,d,e,f,g,h,i) =>
+                write!(fp,"<#BezierBodyElement Straight2({},{},{},{},{},{},{},{},{})>",
+                            a,b,c,d,e,f,g,h,i),
+            BezierBodyElement::T1(a,b,c,d,None) => 
+                write!(fp,"<#BezierBodyElement T1({},{},{},{})>",a,b,c,d),
+            BezierBodyElement::T1(a,b,c,d,Some(e)) => 
+                write!(fp,"<#BezierBodyElement T1({},{},{},{},{})>",
+                            a,b,c,d,e),
+            BezierBodyElement::T4(a,b,c,d,e,f) => 
+                write!(fp,"<#BezierBodyElement T4({},{},{},{},{},{})>",
+                                    a,b,c,d,e,f),
+            BezierBodyElement::E1(a,b,c,None) => 
+                write!(fp,"<#BezierBodyElement E1({},{},{})>",a,b,c),
+            BezierBodyElement::E1(a,b,c,Some(d)) => 
+                write!(fp,"<#BezierBodyElement E1({},{},{},{})>",a,b,c,d),
+            BezierBodyElement::E4(a,b,c,d,e) => 
+                write!(fp,"<#BezierBodyElement E4({},{},{},{},{})>",a,b,c,d,e),
+            
+        }
+    }
 }
 
 impl BezierBodyElement {
@@ -3486,6 +3813,16 @@ pub struct IntegerList {
     elements: Vec<u32>,
 }
 
+impl fmt::Display for IntegerList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<#IntegerList")?;
+        for v in self.elements.iter() {
+            write!(f, " {}",v)?;
+        }
+        write!(f,">")
+    }
+}
+
 impl IntegerList {
     /// Initialize an IntegerList
     /// ## Parameters:
@@ -3505,6 +3842,12 @@ impl IntegerList {
         b.elements.insert(0,e);
         b
     }
+    pub fn len(&self) -> usize {self.elements.len()}
+}
+
+impl Index<usize> for IntegerList {
+    type Output = u32;
+    fn index(&self, i: usize) -> &u32 {&self.elements[i]}
 }
 
 /// A turnout body

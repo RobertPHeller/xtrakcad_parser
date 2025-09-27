@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-22 10:08:21
-//  Last Modified : <250927.1113>
+//  Last Modified : <250927.1402>
 //
 //  Description	
 //
@@ -98,15 +98,37 @@ fn main() {
     for (index, straight) in layout.StraightIter() {
         println!("Straight # {}: {}",*index,*straight);
     }
-    println!("TurnoutIndexes: {:?}",layout.TurnoutIndexes());
-    println!("TurntableIndexes: {:?}",layout.TurntableIndexes());
-    println!("JointIndexes: {:?}",layout.JointIndexes());
-    println!("CarIndexes: {:?}",layout.CarIndexes());
-    println!("NoteIndexes: {:?}",layout.NoteIndexes());
-    println!("TextItemIndexes: {:?}",layout.TextItemIndexes());
-    println!("BlockIndexes: {:?}",layout.BlockIndexes());
-    println!("SwitchMotorIndexes: {:?}",layout.SwitchMotorIndexes());
-    println!("SignalIndexes: {:?}",layout.SignalIndexes());
-    println!("SensorIndexes: {:?}",layout.SensorIndexes());
-    println!("ControlIndexes: {:?}",layout.ControlIndexes());
+    for (index, turnout) in layout.TurnoutIter() {
+        println!("Turnout # {}: {}",*index,*turnout);
+    }
+    for (index, turntable) in layout.TurntableIter() {
+        println!("Turntable # {}: {}",*index,*turntable);
+    }
+    for (index, joint) in layout.JointIter() {
+        println!("Joint # {}: {}",*index,*joint);
+    }
+    for (index, car) in layout.CarIter() {
+        println!("Car # {}: {}",*index,*car);
+    }
+    for (index, note) in layout.NoteIter() {
+        println!("Note # {}: {}",*index,*note);
+    }
+    for (index, textitem) in layout.TextItemIter() {
+        println!("TextItem # {}: {}",*index,*textitem);
+    }
+    for (index, block) in layout.BlockIter() {
+        println!("Block # {}: {}",*index,*block);
+    }
+    for (index, switchmotor) in layout.SwitchMotorIter() {
+        println!("SwitchMotor # {}: {}",*index,*switchmotor);
+    }
+    for (index, signal) in layout.SignalIter() {
+        println!("Signal # {}: {}",*index,*signal);
+    }
+    for (index, sensor) in layout.SensorIter() {
+        println!("Sensor # {}: {}",*index,*sensor);
+    }
+    for (index, control) in layout.ControlIter() {
+        println!("Control # {}: {}",*index,*control);
+    }
 }
