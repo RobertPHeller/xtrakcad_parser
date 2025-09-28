@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250927.2049>
+//  Last Modified : <250928.1418>
 //
 //  Description	
 //
@@ -4026,6 +4026,11 @@ impl fmt::Display for Aspect {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,"<#Aspect {} {}>",self.0, self.1)
     }
+}
+
+impl Aspect {
+    pub fn Name(&self) -> String {self.0.clone()}
+    pub fn Script(&self) -> String {self.1.clone()}
 }
 
 /// Signal aspect list
