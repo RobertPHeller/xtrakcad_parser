@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : 2025-09-24 14:45:20
-//  Last Modified : <250927.1616>
+//  Last Modified : <250927.2049>
 //
 //  Description	
 //
@@ -39,9 +39,19 @@
 //////////////////////////////////////////////////////////////////////////////
 
 //! XtrkCAD layout file parser in Rust, using a lalrpop parser.
+//!
 //! Ported from the Bison++/C++ parser that is part of the Model Railroad 
 //! System
-
+//!
+//! The parser is invoked as part of the new() class function of the Layout 
+//! struct. This function takes a layout filename as its only parameter. It
+//! opens the file and procedes to parse the file and the parser's action code 
+//! populates the Layout struct with the contents of the file.  The new()
+//! returns the fully populated struct, which can then be accessed via various
+//! accessor methods to retrieve information about the layout, including 
+//! tracks, structures, scenery features, and control features.
+//! 
+//! 
 
 
 use lalrpop_util::lalrpop_mod;
@@ -2076,6 +2086,10 @@ impl Control {
 
 
 /// Layout structure.  Contains a parsed layout file.
+///
+/// All of the information in the layout file is parsed and stored in this 
+/// structure.  There are accessor methods defined to fetch this information.
+///
 #[derive(Debug)]
 pub struct Layout {
     filename: String,
